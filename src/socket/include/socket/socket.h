@@ -15,13 +15,34 @@ namespace yazi {
 namespace socket {
 class Socket {
  protected:
-  std::string m_ip;
-  uint16_t m_port;
-  int m_sockfd;
+  std::string m_ip;  // 监听/连接的 IP 地址
+  uint16_t m_port;   // 监听/连接的端口号
+  int m_sockfd;      // 套接字文件描述符
 
  public:
-  Socket();
+  Socket();  // 创建 socket
   ~Socket();
+
+  /* 绑定地址 */
+  bool bind(const std::string &ip, uint16_t port);
+
+  /* 监听连接 */
+  bool listen(int backlog = 128);
+
+  /* 连接服务器 */
+  bool connect(const std::string &ip, uint16_t port);
+
+  /* 接受客户端连接 */
+  int accept();
+
+  /* 向客户端/服务端发送数据 */
+  int send(const void *buf, int len);
+
+  /* 从客户端/服务端接收数据 */
+  int recv(void *buf, int len);
+
+  /* 关闭 socket */
+  void close();
 };
 }  // namespace socket
 }  // namespace yazi
