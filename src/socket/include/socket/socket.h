@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <sys/types.h>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -20,7 +22,10 @@ class Socket {
   int m_sockfd;      // 套接字文件描述符
 
  public:
-  Socket();  // 创建 socket
+  /* 创建 socket_fd */
+  Socket();
+  /* 使用已有的 socket_fd */
+  Socket(int sockfd);
   ~Socket();
 
   /* 绑定地址 */
@@ -36,10 +41,10 @@ class Socket {
   int accept();
 
   /* 向客户端/服务端发送数据 */
-  int send(const void *buf, int len);
+  ssize_t send(const void *buf, size_t len);
 
   /* 从客户端/服务端接收数据 */
-  int recv(void *buf, int len);
+  ssize_t recv(void *buf, size_t len);
 
   /* 关闭 socket */
   void close();

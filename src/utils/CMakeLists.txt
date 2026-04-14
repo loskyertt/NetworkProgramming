@@ -9,4 +9,4 @@ target_include_directories(utils
   PRIVATE impl
 )
 
-# add_subdirectory(test)
+# add_subdirectory(tests)

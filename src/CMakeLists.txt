@@ -22,10 +22,10 @@ target_link_libraries(socket
   PRIVATE utils
 )
 
-if(MSVC)
-  set_target_properties(utils PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
-
 # 主可执行文件
-add_executable(app main.cpp)
-target_link_libraries(app PRIVATE socket utils)
+# 服务端
+add_executable(server server.cpp)
+target_link_libraries(server PRIVATE socket utils)
+# 客户端
+add_executable(client client.cpp)
+target_link_libraries(client PRIVATE socket utils)
