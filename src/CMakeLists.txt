@@ -27,5 +27,5 @@ if(MSVC)
 endif()
 
 # 主可执行文件
-# add_executable(${TARGET} main.cpp)
-# target_link_libraries(${TARGET} PRIVATE socket utils)
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE socket utils)
