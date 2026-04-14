@@ -11,15 +11,15 @@
 #include <fstream>
 #include <string>
 
-#define debug(format, ...) \
+#define Log_debug(format, ...) \
   utility::Logger::getInstance().log(utility::Logger::Level::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define info(format, ...) \
+#define Log_info(format, ...) \
   utility::Logger::getInstance().log(utility::Logger::Level::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define warn(format, ...) \
+#define Log_warn(format, ...) \
   utility::Logger::getInstance().log(utility::Logger::Level::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define error(format, ...) \
+#define Log_error(format, ...) \
   utility::Logger::getInstance().log(utility::Logger::Level::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define fatal(format, ...) \
+#define Log_fatal(format, ...) \
   utility::Logger::getInstance().log(utility::Logger::Level::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
 namespace utility {

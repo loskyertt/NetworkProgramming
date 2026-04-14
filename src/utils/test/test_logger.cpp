@@ -16,10 +16,10 @@ int main() {
   logger.setMax(1000);
 
   // logger.log(utility::Logger::Level::DEBUG, __FILE__, __LINE__, "name is %s, age is %d", "sky", 22);
-  debug("name is %s, age is %d", "sky", 22);
-  info("name is %s, age is %d", "sky", 22);
-  warn("name is %s, age is %d", "sky", 22);
-  error("name is %s, age is %d", "sky", 22);
-  fatal("name is %s, age is %d", "sky", 22);
+  Log_debug("name is %s, age is %d", "sky", 22);
+  Log_info("name is %s, age is %d", "sky", 22);
+  Log_warn("name is %s, age is %d", "sky", 22);
+  Log_error("name is %s, age is %d", "sky", 22);
+  Log_fatal("name is %s, age is %d", "sky", 22);
   return 0;
 }
