@@ -9,13 +9,12 @@
 #include "logger/logger.h"
 
 int main() {
-  utility::Logger &logger = utility::Logger::getInstance();
+  sky::utility::Logger &logger = sky::utility::Logger::getInstance();
 
   logger.open("log/test.log");
-  // logger.setLevel(utility::Logger::Level::ERROR);
+  // logger.setLevel(sky::utility::Logger::Level::ERROR);
   logger.setMax(1000);
 
-  // logger.log(utility::Logger::Level::DEBUG, __FILE__, __LINE__, "name is %s, age is %d", "sky", 22);
   Log_debug("name is %s, age is %d", "sky", 22);
   Log_info("name is %s, age is %d", "sky", 22);
   Log_warn("name is %s, age is %d", "sky", 22);

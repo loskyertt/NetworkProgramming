@@ -13,10 +13,10 @@
 #include <print>
 #include <string>
 
-using namespace yazi::socket;
+using namespace sky::socket;
 
 int main() {
-  utility::Logger::getInstance().open("log/server.log");
+  sky::utility::Logger::getInstance().open("log/server.log");
 
   // 1. 服务端监听 Socket
   Socket server;

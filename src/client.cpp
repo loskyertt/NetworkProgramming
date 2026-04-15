@@ -13,10 +13,10 @@
 #include <print>
 
 int main() {
-  utility::Logger::getInstance().open("log/client.log");
+  sky::utility::Logger::getInstance().open("log/client.log");
 
   // 1. 客户端 Socket
-  yazi::socket::Socket client;
+  sky::socket::Socket client;
 
   // 2. 连接服务器
   client.connect("127.0.0.1", 8080);

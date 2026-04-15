@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace utility;
+using namespace sky::utility;
 
 const char *Logger::s_level[static_cast<size_t>(Level::LEVEL_COUNT)] = {"DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 

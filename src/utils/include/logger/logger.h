@@ -12,16 +12,17 @@
 #include <string>
 
 #define Log_debug(format, ...) \
-  utility::Logger::getInstance().log(utility::Logger::Level::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
+  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #define Log_info(format, ...) \
-  utility::Logger::getInstance().log(utility::Logger::Level::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
+  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #define Log_warn(format, ...) \
-  utility::Logger::getInstance().log(utility::Logger::Level::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
+  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #define Log_error(format, ...) \
-  utility::Logger::getInstance().log(utility::Logger::Level::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
+  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #define Log_fatal(format, ...) \
-  utility::Logger::getInstance().log(utility::Logger::Level::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
+namespace sky {
 namespace utility {
 
 class Logger {
@@ -85,3 +86,5 @@ class Logger {
 };
 
 }  // namespace utility
+
+}  // namespace sky

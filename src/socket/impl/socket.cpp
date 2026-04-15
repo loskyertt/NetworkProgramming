@@ -17,7 +17,7 @@
 #include <cstring>
 #include <string>
 
-using namespace yazi::socket;
+using namespace sky::socket;
 
 Socket::Socket() : m_ip("127.0.0.1"), m_port(0), m_sockfd(-1) {
   // 实例化 Socket 对象时，就创建 sockfd

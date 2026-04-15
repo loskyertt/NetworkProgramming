@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <string>
 
-namespace yazi {
+namespace sky {
 namespace socket {
 class Socket {
  protected:
@@ -50,4 +50,4 @@ class Socket {
   void close();
 };
 }  // namespace socket
-}  // namespace yazi
+}  // namespace sky
