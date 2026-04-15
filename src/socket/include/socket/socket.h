@@ -3,7 +3,7 @@
  * @Time    :   2026/04/14 15:42:35
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   .....
+ * @Desc    :   对 socket 的封装
  */
 
 #pragma once
@@ -26,7 +26,7 @@ class Socket {
   Socket();
   /* 使用已有的 socket_fd */
   Socket(int sockfd);
-  ~Socket();
+  virtual ~Socket();
 
   /* 绑定地址 */
   bool bind(const std::string &ip, uint16_t port);
@@ -48,6 +48,31 @@ class Socket {
 
   /* 关闭 socket */
   void close();
+
+  /* 设置为非阻塞 I/O */
+  bool setNonBlocking();
+
+  /* 设置发送缓冲区大小 */
+  bool setSendBufferSize(size_t size);
+
+  /* 设置接收缓冲区大小 */
+  bool setReceiveBufferSize(size_t size);
+
+  /**
+   * @brief 设置 linger
+   *
+   * - @param active 是否启用 linger
+   * - @param seconds linger 时间（秒），当设置为 0 时，会关闭 TIME_WAIT 状态
+   * - @return true 设置成功
+   * - @return false 设置失败
+   */
+  bool setLinger(bool active, int seconds);
+
+  /* 设置 keepalive */
+  bool setKeepAlive();
+
+  /* 设置 reuse address */
+  bool setReuseAddress();
 };
 }  // namespace socket
 }  // namespace sky

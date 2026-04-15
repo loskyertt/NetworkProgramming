@@ -10,10 +10,12 @@
 #include "socket/socket.h"
 
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cstdint>
 #include <cstring>
 #include <string>
 
@@ -112,4 +114,68 @@ void Socket::close() {
     ::close(m_sockfd);
     m_sockfd = -1;
   }
+}
+
+bool Socket::setNonBlocking() {
+  // 1. 首先使用 F_GETFL 获取（get）当前文件描述符 m_sockfd 的状态标志
+  int flags = fcntl(m_sockfd, F_GETFL, 0);
+  if (flags < 0) {
+    Log_error("fcntl get socket flags error: errno = %d, errmsg = %s", errno, strerror(errno));
+    return false;
+  }
+  // 2. 然后使用 F_SETFL（set）将 O_NONBLOCK 标志加入原有标志中，使该 socket 变为非阻塞模式
+  flags |= O_NONBLOCK;
+  if (fcntl(m_sockfd, F_SETFL, flags) < 0) {
+    Log_error("fcntl set socket flags error: errno = %d, errmsg = %s", errno, strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Socket::setSendBufferSize(size_t size) {
+  uint32_t buffer_size = static_cast<uint32_t>(size);
+  if (setsockopt(m_sockfd, SOL_SOCKET, SO_SNDBUF, &buffer_size, sizeof(buffer_size)) < 0) {
+    Log_error("set socket send buffer size error: errno = %d, errmsg = %s", errno, strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Socket::setReceiveBufferSize(size_t size) {
+  uint32_t buffer_size = static_cast<uint32_t>(size);
+  if (setsockopt(m_sockfd, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof(buffer_size)) < 0) {
+    Log_error("set socket receive buffer size error: errno = %d, errmsg = %s", errno, strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Socket::setLinger(bool active, int seconds) {
+  struct linger ling;
+  memset(&ling, 0, sizeof(ling));
+  ling.l_onoff = active ? 1 : 0;
+  ling.l_linger = seconds;
+  if (setsockopt(m_sockfd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling)) < 0) {
+    Log_error("set socket linger error: errno = %d, errmsg = %s", errno, strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Socket::setKeepAlive() {
+  int flag = 1;
+  if (setsockopt(m_sockfd, SOL_SOCKET, SO_KEEPALIVE, &flag, sizeof(flag)) < 0) {
+    Log_error("set socket keepalive error: errno = %d, errmsg = %s", errno, strerror(errno));
+    return false;
+  }
+  return true;
+}
+
+bool Socket::setReuseAddress() {
+  int flag = 1;
+  if (setsockopt(m_sockfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0) {
+    Log_error("set socket reuse address error: errno = %d, errmsg = %s", errno, strerror(errno));
+    return false;
+  }
+  return true;
 }

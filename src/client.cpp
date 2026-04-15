@@ -7,19 +7,17 @@
  */
 
 #include "logger/logger.h"
-#include "socket/socket.h"
+#include "socket/client_socket.h"
 
 #include <string>
 #include <print>
 
+using namespace sky::socket;
+
 int main() {
   sky::utility::Logger::getInstance().open("log/client.log");
 
-  // 1. 客户端 Socket
-  sky::socket::Socket client;
-
-  // 2. 连接服务器
-  client.connect("127.0.0.1", 8080);
+  ClientSocket client("127.0.0.1", 8080);
 
   // 3. 发送数据
   std::string data = "Hello, server!";
@@ -29,7 +27,4 @@ int main() {
   char buf[1024] = {0};
   client.recv(buf, sizeof(buf));
   std::println("recv: data={}", std::string(buf));
-
-  // 5. 关闭连接
-  client.close();
 }

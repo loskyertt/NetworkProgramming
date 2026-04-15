@@ -7,7 +7,7 @@
  */
 
 #include "logger/logger.h"
-#include "socket/socket.h"
+#include "socket/server_socket.h"
 
 #include <sys/types.h>
 #include <print>
@@ -18,17 +18,19 @@ using namespace sky::socket;
 int main() {
   sky::utility::Logger::getInstance().open("log/server.log");
 
-  // 1. 服务端监听 Socket
-  Socket server;
+  // // 1. 服务端监听 Socket
+  // Socket server;
 
-  // 2. 绑定地址
-  server.bind("127.0.0.1", 8080);
+  // // 2. 绑定地址
+  // server.bind("127.0.0.1", 8080);
 
-  // 3. 监听连接
-  if (!server.listen(5)) {
-    return 1;
-  }
-  std::println("Server is listening ...");
+  // // 3. 监听连接
+  // if (!server.listen(1024)) {
+  //   return 1;
+  // }
+  // std::println("Server is listening ...");
+
+  ServerSocket server("127.0.0.1", 8080);
 
   while (true) {
     // 4. 接受连接
@@ -47,10 +49,7 @@ int main() {
 
     // 6. 向客户端发送数据
     connection.send(buf, static_cast<size_t>(len));
-  } // 每次循环超出 while 作用域范围，会触发 connection 的析构，关闭 connfd
-
-  // 关闭服务器
-  server.close();
+  }  // 每次循环超出 while 作用域范围，会触发 connection 的析构，关闭 connfd
 
   return 0;
 }

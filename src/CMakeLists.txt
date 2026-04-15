@@ -13,6 +13,8 @@ target_include_directories(utils
 # socket 模块：编译为静态库
 add_library(socket STATIC
   socket/impl/socket.cpp
+  socket/impl/server_socket.cpp
+  socket/impl/client_socket.cpp
 )
 target_include_directories(socket
   PUBLIC  socket/include
