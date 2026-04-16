@@ -1,5 +1,5 @@
 /**
- * @File    :   demo01/server.cpp
+ * @File    :   demo/server.cpp
  * @Time    :   2026/04/14 13:31:16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
@@ -24,7 +24,7 @@ int main() {
     std::println("create socket error: errno = {}, errmsg = {}", errno, strerror(errno));
     return 1;
   } else {
-    std::println("socket create success!");
+    std::println("socket create success! server_fd={}", server_fd);
   }
 
   // 2. 绑定 socket
@@ -74,10 +74,11 @@ int main() {
 
     // 6. 向客户端发送数据
     ::send(connfd, buf, static_cast<size_t>(len), 0);
+
+    ::close(connfd);
   }
 
   // 7. 关闭 socket
   ::close(server_fd);
   return 0;
 }
-

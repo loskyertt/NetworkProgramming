@@ -1,34 +1,63 @@
-# 1. 说明
+# 1. 网络编程学习
 
-该项目仅适合单个 C++ 文件编译。
+**构建命令**：
+```bash
+cmake -B build -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+cmake --build build
+cd build && ctest --output-on-failure
+```
 
 ---
 
-# 2. 构建
+# 2. 项目结构
 
-## 2.1 使用 Ninja
+```bash
+project_root/
+├── CMakeLists.txt          # 顶层构建配置（现代CMake范式）
+├── src/                    # 源代码目录
+│   ├── main.cpp            # 程序入口
+│   ├── core/               # 核心业务模块
+│   │   ├── include/        # 对外公开接口头文件
+│   │   └── impl/           # 内部实现源文件和内部私有头文件（外部不需要知道的细节）
+│   └── utils/              # 通用工具模块
+├── include/                # 项目级公共头文件（供外部库或应用程序集成）
+├── tests/                  # 测试代码
+│   ├── unit/               # 单元测试
+│   └── integration/        # 集成测试
+├── cmake/                  # 自定义CMake模块（如FindXXX.cmake）
+├── third_party/            # 第三方依赖（或用包管理器）
+├── scripts/                # 自动化脚本（构建、静态检查、部署）
+├── docs/                   # 技术文档与架构说明
+└── conanfile.txt 或 vcpkg.json # 依赖声明文件
+```
+
+---
+
+# 3. 构建
+
+## 3.1 使用 Ninja
 
 > `Ninja`的构建速度很快。
 
 如果采用的是 LLVM：
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+cmake -B build -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 ```
 
 如果采用的是 GCC：
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+cmake -B build -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
 ```
 
 如果采用的是 MSVC：
 
 ```bash
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+cmake -B build -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
 ```
 
-## 2.2 编译
+## 3.2 编译
 
 ```bash
 cmake --build build -j12
@@ -38,13 +67,13 @@ cmake --build build -j12
 
 ---
 
-# 3. 项目配置
+# 4. 项目配置
 
 > 下面是可能在编写代码时遇到的问题，以及对应的解决办法。
 
-## 3.1 Windows 下编码问题
+## 4.1 Windows 下编码问题
 
-### 3.1.1 中文输出乱码问题
+### 4.1.1 中文输出乱码问题
 
 > Windows 的控制台编码一般采用的是 GB2312 编码的，但源代码编码采用的是 UTF-8 编码（不建议把源代码文件编码改为 GB2312 格式！），所以当有中文在控制台输出时，会产生乱码。解决方法如下：
 
@@ -90,7 +119,7 @@ int main(){
 }
 ```
 
-### 3.1.2 MSVC 编译时的问题
+### 4.1.2 MSVC 编译时的问题
 
 如果采用 MSVC 编译，需要在 `CMakeLists.txt` 中给目标程序（包括静态库和动态库）添加编译选项以启用 MSVC 下的 UTF-8 支持：
 
@@ -120,7 +149,7 @@ endif()
 
 > `WINDOWS_EXPORT_ALL_SYMBOLS` 是专门为动态库（`SHARED`）设计的——它让 MSVC 自动生成 `.lib` 导入库和导出符号。静态库直接被链接进可执行文件，没有"导出符号"这个概念，所以不需要配置。
 
-## 3.2 clangd 配置
+## 4.2 clangd 配置
 
 在 **VSCode + clangd** 配置下，可能会出现无法找到标准库头文件的情况，导致 clangd 报错，但是编译是可以通过的。一般单独分别安装 llvm 和 mingw 时，会出现这个错误。这个错误是因为 **clangd 无法找到 MinGW 的标准库头文件路径**。虽然你生成了 `compile_commands.json`，但里面的编译器是 MinGW 的 `g++.exe`，而 clangd 需要知道这些头文件在哪里。
 
@@ -128,13 +157,13 @@ endif()
 - **clangd** 基于 LLVM/Clang，默认在 MSVC 或自身 libc++ 环境下查找头文件
 - **MinGW** 使用 GCC 的 libstdc++，头文件路径不同
 
-### 3.2.1 方案 1：使用集成有 llvm 的 mingw
+### 4.2.1 方案 1：使用集成有 llvm 的 mingw
 
 下载：[winlibs](https://winlibs.com/)
 
 选择 **UCRT runtime** 版并且包含有 **LLVM/Clang/LLD/LLDB** 的下载。
 
-### 3.2.2 方案 2：配置 clangd 参数
+### 4.2.2 方案 2：配置 clangd 参数
 
 > 比如我这里使用的是 CLion 集成的 mingw。
 
@@ -178,7 +207,7 @@ CompileFlags:
 
 > 记得把上面的路径改成你自己的。
 
-### 3.2.3 方案 3：改用 Clang 编译器
+### 4.2.3 方案 3：改用 Clang 编译器
 
 可以尝试直接用 Clang 编译，避免工具链混用：
 
@@ -189,7 +218,7 @@ cmake -B build -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -D
 
 确保 `clang++` 能找到 MinGW 的 libstdc++，或使用 Clang 自带的 libc++。
 
-## 3.3 使用 MSVC 编译器
+## 4.3 使用 MSVC 编译器
 
 > 有时候不可避免得要用到 MSVC 编译器，因为网上有不少预编译好的 Windows 第三方库，都是用的 MSVC 编译器。
 
@@ -223,3 +252,103 @@ cmake -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Debug
 ```
 
 因此，除非要使用 VS 进行开发，其他情况生成器请选择 Ninja 或者 Unix Makefiles。
+
+---
+
+# 5. GTest 配置
+
+## 5.1 方式一：联网下载
+
+在顶层 `CMakeLists.txt` 中添加：
+
+```cmake
+enable_testing()
+```
+
+> `gtest_discover_tests` 注册测试用例依赖 `enable_testing()` 这个开关，没有它 CTest `完全不知道有测试存在。该选项必须在顶层，add_subdirectory` 之前
+
+再在 `tests/CMakeLists.txt` 中添加：
+
+```cmake
+# tests/CMakeLists.txt
+
+include(FetchContent)
+
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+
+# Windows 上保持 MSVC 运行时一致性
+if(MSVC)
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif()
+
+FetchContent_MakeAvailable(googletest)
+
+add_executable(unit_tests
+    unit/test_circle.cpp
+    unit/test_rectangle.cpp
+)
+
+target_link_libraries(unit_tests
+    PRIVATE core GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(unit_tests)
+```
+
+> `FetchContent` 是有缓存机制的，第一次 configure 时，CMake 会把 GTest 下载并解压到：
+>
+> ```
+> build/_deps/googletest-src/
+> build/_deps/googletest-build/
+> build/_deps/googletest-subbuild/
+> ```
+>
+> 后续再跑同样的 `cmake -B build ...` 命令，只要 `build/` 目录存在，CMake 检测到 `_deps` 已经存在就直接跳过下载。
+
+- **`set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)`**：仅在 Windows + MSVC 下有意义。MSVC 编译时有两种运行时库：`/MT`（静态）和 `/MD`（动态）。如果你的项目用 `/MD`，但 GTest 默认编译成 `/MT`，链接时会报冲突。这个变量强制 GTest 跟你的项目保持一致，用同一种运行时，避免报错。
+
+- **`include(GoogleTest)`**：加载 CMake 内置的 `GoogleTest` 模块，这个模块提供了 `gtest_discover_tests` 这个函数。没有这行，下一行就会报"找不到命令"。
+
+- **`gtest_discover_tests(unit_tests)`**：让 CMake 在构建完成后自动运行 `unit_tests` 可执行文件，扫描里面所有 `TEST()`、`TEST_F()` 的用例，并逐一注册到 CTest 中。这样 `ctest` 才能发现并运行它们。它比旧的 `gtest_add_tests` 更可靠，因为是运行时发现而不是静态解析源码。
+
+## 5.2 方式二：添加到 3rdparty 目录下
+
+手动从 github [google/googletest](https://github.com/google/googletest) 下载好后，解压缩把源码目录放到 `3rdparty` 目录下。
+
+在顶层 `CMakeLists.txt` 中添加：
+
+```cmake
+# 开启 gtest_discover_tests 注册测试用例依赖
+enable_testing()
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/3rdparty/googletest-1.17.0)
+```
+
+> 把 `googletest-1.17.0` 这个改成你自己的源码目录名。
+
+然后在 `tests/CMakeLists.txt` 中添加：
+
+```cmake
+# tests/CMakeLists.txt
+
+if(MSVC)
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif()
+
+add_executable(unit_tests
+  unit/test_circle.cpp
+  unit/test_rectangle.cpp
+)
+
+target_link_libraries(unit_tests
+  PRIVATE core GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(unit_tests)
+```

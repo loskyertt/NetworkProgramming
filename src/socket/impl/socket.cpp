@@ -35,7 +35,10 @@ Socket::Socket() : m_ip("127.0.0.1"), m_port(0), m_sockfd(-1) {
 Socket::Socket(int sockfd) : m_sockfd(sockfd) {}
 
 Socket::~Socket() {
-  close();
+  if (!m_is_release) {
+    close();
+  }
+  // 如果 m_is_release 为 true，则不关闭 sockfd，由调用者负责释放
 }
 
 bool Socket::bind(const std::string &ip, uint16_t port) {

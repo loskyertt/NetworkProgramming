@@ -7,13 +7,15 @@
  */
 
 #include "socket/server_socket.h"
-#include <print>
 #include "socket/socket.h"
+
+#include <print>
 
 using namespace sky::socket;
 
 ServerSocket::ServerSocket(const std::string &ip, uint16_t port) : Socket() {
   // 1. 服务端监听 Socket（实例化父类对象后，就生成了一个 sockfd）
+  std::println("ServerSocket constructor: listen_fd={}", m_sockfd);
 
   // setNonBlocking(); // 设置为非阻塞 I/O 模式
   setReceiveBufferSize(10 * 1024);

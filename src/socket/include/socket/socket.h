@@ -21,6 +21,8 @@ class Socket {
   uint16_t m_port;   // 监听/连接的端口号
   int m_sockfd;      // 套接字文件描述符
 
+  bool m_is_release = false;  // 是否释放 m_sockfd 的所有权
+
  public:
   /* 创建 socket_fd */
   Socket();
@@ -73,6 +75,13 @@ class Socket {
 
   /* 设置 reuse address */
   bool setReuseAddress();
+
+  // getters and setters
+ public:
+  int getSocketFd() const { return m_sockfd; }
+
+  /* 设置释放 m_sockfd 的所有权 */
+  void setRelease() { m_is_release = true; }
 };
 }  // namespace socket
 }  // namespace sky
