@@ -35,7 +35,7 @@ class Selector {
   /**
    * @brief select 操作：监控 fd，返回就绪的 fd 数量（目前仅实现了监控 read_fds）
    *
-   * - @param milliseconds 超时时间（毫秒），-1 表示阻塞等待
+   * - @param milliseconds 超时时间（毫秒），默认为 -1，表示阻塞等待
    * - @return 0: 超时, >0: 就绪的 fd 数量, -1: 错误
    */
   int select(int milliseconds = -1);

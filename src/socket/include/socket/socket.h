@@ -59,7 +59,7 @@ class Socket {
   /**
    * @brief 接受客户端连接
    *
-   * @return int 成功时返回一个新的文件描述符（代表与客户端的连接），失败时返回 -1
+   * @return int 成功时返回一个新的文件描述符 connfd（代表与客户端的连接），失败时返回 -1
    */
   int accept();
 
@@ -81,20 +81,39 @@ class Socket {
    */
   ssize_t recv(void *buf, size_t len);
 
-  /* 关闭 socket */
+  /**
+   * @brief 关闭 socket
+   */
   void close();
 
-  /* 设置为非阻塞 I/O */
+  /**
+   * @brief 设置为非阻塞 I/O
+   * @details 作用对象：listen_fd 和 conn_fd，在 I/O 多路复用中，两者都要设置
+   * @return true 设置成功；false 设置失败
+   */
   bool setNonBlocking();
 
-  /* 设置发送缓冲区大小 */
+  /**
+   * @brief 设置发送缓冲区大小
+   * @details 作用对象：listen_fd 和 conn_fd。由于可继承特性，如果你希望所有新连接都拥有特定的缓冲区大小，必须对 listen_fd 进行设置，且必须在 listen(...) 调用之前完成。
+   *
+   * @param size 缓冲区大小
+   * @return true 设置成功；false 设置失败
+   */
   bool setSendBufferSize(size_t size);
 
-  /* 设置接收缓冲区大小 */
+  /**
+   * @brief 设置接收缓冲区大小
+   * @details 作用对象：listen_fd 和 conn_fd。由于可继承特性，如果你希望所有新连接都拥有特定的缓冲区大小，必须对 listen_fd 进行设置，且必须在 listen() 调用之前完成。
+   *
+   * @param size 缓冲区大小
+   * @return true 设置成功；false 设置失败
+   */
   bool setReceiveBufferSize(size_t size);
 
   /**
    * @brief 设置 linger
+   * @details 作用对象：conn_fd
    *
    * - @param active 是否启用 linger
    * - @param seconds linger 时间（秒），当设置为 0 时，会关闭 TIME_WAIT 状态
@@ -103,17 +122,27 @@ class Socket {
    */
   bool setLinger(bool active, int seconds);
 
-  /* 设置 keepalive */
+  /**
+   * @brief 设置 keepalive
+   * @details 作用对象：conn_fd
+   * @return true 设置成功；false 设置失败
+   */
   bool setKeepAlive();
 
-  /* 设置 reuse address */
+  /**
+   * @brief 设置 reuse address
+   * @details 作用对象：listen_fd，必须在 bind(...) 之前设置
+   * @return true 设置成功；false 设置失败
+   */
   bool setReuseAddress();
 
   // getters and setters
  public:
   int getSocketFd() const { return m_sockfd; }
 
-  /* 让出 m_sockfd 的所有权，即 m_sockfd 不再由析构函数释放 */
+  /**
+   * @brief 让出 m_sockfd 的所有权，即 m_sockfd 不再由析构函数释放
+   */
   void setRelease() { m_is_release = true; }
 };
 }  // namespace socket

@@ -21,9 +21,9 @@ ServerSocket::ServerSocket(const std::string &ip, uint16_t port) : Socket() {
   setNonBlocking(); // 设置为非阻塞 I/O 模式
   setReceiveBufferSize(10 * 1024);
   setSendBufferSize(10 * 1024);
-  setLinger(true, 0);
-  setKeepAlive();
   setReuseAddress();
+  // setLinger(true, 0);
+  // setKeepAlive();
 
   // 2. 绑定地址
   bind(ip, port);

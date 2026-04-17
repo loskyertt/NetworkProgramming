@@ -1,5 +1,5 @@
 /**
- * @File    :   src/main.cpp
+ * @File    :   src/client.cpp
  * @Time    :   2026/04/14 20:29:25
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
@@ -10,6 +10,7 @@
 #include "logger/logger.h"
 #include "socket/client_socket.h"
 
+#include <iostream>
 #include <string>
 #include <print>
 
@@ -23,7 +24,8 @@ int main() {
 
   // 通信
   while (true) {
-    std::string data = "hello";
+    std::string data;
+    std::getline(std::cin, data);
 
     // 发送数据
     client.send(data.c_str(), data.size());
@@ -31,8 +33,6 @@ int main() {
     // 接收数据
     char buf[1024] = {0};
     client.recv(buf, sizeof(buf));
-    std::println("recv data: {}", std::string(buf));
-
-    sleep(2);
+    std::println("recv: data={}", std::string(buf));
   }
 }

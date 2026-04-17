@@ -62,9 +62,9 @@ class SocketHandler {
   /**
    * @brief 处理事件
    *
-   * - @param wait_time 等待时间（毫秒）
+   * - @param wait_time 等待时间（毫秒），默认为 -1，表示阻塞等待
    */
-  void handle(int wait_time);
+  void handle(int wait_time = -1);
 
  private:
   /* 处理新连接 */
