@@ -46,14 +46,14 @@ class SocketHandler {
   void attach(Socket *socket);
 
   /**
-   * @brief 仅从 I/O 监控中移除，不再监听这个 conn_fd 的事件，连接对象仍然保留
+   * @brief 仅从 I/O 监控中移除，不再监听这个 conn_fd 的事件，conn_fd 和 连接套接字对象的映射关系（map）仍然保留
    *
    * - @param socket 要删除的套接字
    */
   void detach(Socket *socket);
 
   /**
-   * @brief 完全移除连接，从监控集合和连接映射中都删除
+   * @brief 完全移除连接，包括监控集合和连接映射（map 容器）
    *
    * - @param socket 要移除的套接字
    */

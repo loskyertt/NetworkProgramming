@@ -14,9 +14,10 @@
 #include <print>
 
 using namespace sky::socket;
+using namespace sky::utility;
 
 int main() {
-   Singleton<Logger>::getInstance().open("log/client.log");
+  Singleton<Logger>::getInstance().open("log/client.log");
 
   ClientSocket client("127.0.0.1", 8080);
 

@@ -12,10 +12,10 @@
 
 namespace sky {
 namespace socket {
+/* 创建客户端套接字：创建 client_fd -> 连接 */
 class ClientSocket : public Socket {
  public:
   ClientSocket() = delete;
-  /* 连接服务器 */
   ClientSocket(const std::string &ip, uint16_t port);
   ~ClientSocket() override = default;
 };

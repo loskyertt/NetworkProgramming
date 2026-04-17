@@ -112,6 +112,9 @@ int main() {
           Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));
         }
       }
+      // 虽然超出这个 if 的作用域后，client_conn 这个对象会被销毁，但这个对象只是内核连接的包装器
+      // 同时由于我们调用了 setRelease()，所以析构函数不会关闭文件描述符，文件描述符在内核中仍然有效
+      // 真正的连接是由内核管理，通过文件描述符访问
     }
   }
 

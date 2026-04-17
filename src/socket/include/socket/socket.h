@@ -30,16 +30,37 @@ class Socket {
   Socket(int sockfd);
   virtual ~Socket();
 
-  /* 绑定地址 */
+  /**
+   * @brief 绑定地址
+   *
+   * - @param ip 绑定的 IP 地址
+   * - @param port 绑定的端口号
+   * - @return true 绑定成功，false 绑定失败
+   */
   bool bind(const std::string &ip, uint16_t port);
 
-  /* 监听连接 */
+  /**
+   * @brief 监听连接
+   *
+   * - @param backlog 最大待处理连接数，即连接请求队列（全连接队列）的长度
+   * - @return true 监听成功，false 监听失败
+   */
   bool listen(int backlog = 128);
 
-  /* 连接服务器 */
+  /**
+   * @brief 客户端使用，连接服务器
+   *
+   * - @param ip 服务器 IP 地址
+   * - @param port 服务器端口号
+   * - @return true 连接成功，false 连接失败
+   */
   bool connect(const std::string &ip, uint16_t port);
 
-  /* 接受客户端连接 */
+  /**
+   * @brief 接受客户端连接
+   *
+   * @return int 成功时返回一个新的文件描述符（代表与客户端的连接），失败时返回 -1
+   */
   int accept();
 
   /**
@@ -92,7 +113,7 @@ class Socket {
  public:
   int getSocketFd() const { return m_sockfd; }
 
-  /* 设置释放 m_sockfd 的所有权 */
+  /* 让出 m_sockfd 的所有权，即 m_sockfd 不再由析构函数释放 */
   void setRelease() { m_is_release = true; }
 };
 }  // namespace socket

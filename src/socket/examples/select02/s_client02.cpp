@@ -6,10 +6,10 @@
  * @Desc    :   .....
  */
 
-#include <unistd.h>
 #include "logger/logger.h"
 #include "socket/client_socket.h"
 
+#include <iostream>
 #include <string>
 #include <print>
 
@@ -23,7 +23,8 @@ int main() {
 
   // 通信
   while (true) {
-    std::string data = "hello";
+    std::string data;
+    std::getline(std::cin, data);
 
     // 发送数据
     client.send(data.c_str(), data.size());
@@ -32,7 +33,5 @@ int main() {
     char buf[1024] = {0};
     client.recv(buf, sizeof(buf));
     std::println("recv data: {}", std::string(buf));
-
-    sleep(2);
   }
 }
