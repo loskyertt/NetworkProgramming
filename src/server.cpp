@@ -59,6 +59,7 @@ int main() {
     Log_debug("select ok: ready_count=%d", ready_count);
 
     // 接受连接请求, 这个调用不阻塞
+    // 如果有新连接，listen_fd 在 read_fs 中会被位置 1
     if (FD_ISSET(listen_fd, &read_fds)) {
       // 处理新连接
       Log_debug("New connection request on listen_fd=%d", listen_fd);
@@ -99,7 +100,7 @@ int main() {
           Log_info("Client disconnected: fd=%d", fd);
           // 将检测的文件描述符从读集合中删除
           FD_CLR(fd, &fds);
-          ::close(fd);
+          client_conn.close();  // 手动关闭
         } else if (bytes_read > 0) {
           std::println("Received {} bytes from fd={}, data={}", bytes_read, fd, std::string(buf));
 
