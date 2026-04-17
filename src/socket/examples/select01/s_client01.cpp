@@ -1,5 +1,5 @@
 /**
- * @File    :   src/main.cpp
+ * @File    :   src/socket/examples/select01/s_client01.cpp
  * @Time    :   2026/04/14 20:29:25
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
@@ -14,10 +14,9 @@
 #include <print>
 
 using namespace sky::socket;
-using namespace sky::utility;
 
 int main() {
-  Singleton<Logger>::getInstance().open("log/client.log");
+   Singleton<Logger>::getInstance().open("log/client.log");
 
   ClientSocket client("127.0.0.1", 8080);
 
@@ -32,6 +31,6 @@ int main() {
     // 接收数据
     char buf[1024] = {0};
     client.recv(buf, sizeof(buf));
-    std::println("recv data: {}", std::string(buf));
+    std::println("recv: data={}", std::string(buf));
   }
 }

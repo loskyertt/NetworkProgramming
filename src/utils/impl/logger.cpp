@@ -27,10 +27,10 @@ Logger::~Logger() {
   close();
 }
 
-Logger &Logger::getInstance() {
-  static Logger instance;
-  return instance;
-}
+// Logger &Logger::getInstance() {
+//   static Logger instance;
+//   return instance;
+// }
 
 void Logger::open(const std::string &filename) {
   m_filename = filename;

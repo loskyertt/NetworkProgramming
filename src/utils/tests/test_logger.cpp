@@ -8,11 +8,13 @@
 
 #include "logger/logger.h"
 
+using namespace sky::utility;
+
 int main() {
-  sky::utility::Logger &logger = sky::utility::Logger::getInstance();
+  auto &logger = Singleton<Logger>::getInstance();
 
   logger.open("log/test.log");
-  // logger.setLevel(sky::utility::Logger::Level::ERROR);
+  // logger.setLevel( Singleton<Logger>::Level::ERROR);
   logger.setMax(1000);
 
   Log_debug("name is %s, age is %d", "sky", 22);

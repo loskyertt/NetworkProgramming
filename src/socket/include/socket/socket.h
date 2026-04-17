@@ -42,10 +42,22 @@ class Socket {
   /* 接受客户端连接 */
   int accept();
 
-  /* 向客户端/服务端发送数据 */
+  /**
+   * @brief 向客户端/服务端发送数据
+   *
+   * - @param buf 指向待发送数据缓冲区的指针
+   * - @param len 要发送的数据字节数
+   * - @return ssize_t 成功时返回实际发送的字节数（可能小于请求发送的字节数），失败时返回 -1 并设置 errno
+   */
   ssize_t send(const void *buf, size_t len);
 
-  /* 从客户端/服务端接收数据 */
+  /**
+   * @brief 从客户端/服务端接收数据
+   *
+   * - @param buf 指向接收缓冲区的指针，用于存放接收到的数据
+   * - @param len 缓冲区最大容量，即最多接收的字节数
+   * - @return ssize_t 成功时返回接收到的字节数（可能小于请求的 len），连接关闭时返回 0，出错时返回 -1
+   */
   ssize_t recv(void *buf, size_t len);
 
   /* 关闭 socket */

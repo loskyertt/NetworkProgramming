@@ -8,24 +8,33 @@
 
 #pragma once
 
+#include "singleton.h"
+
 #include <fstream>
 #include <string>
 
-#define Log_debug(format, ...) \
-  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_info(format, ...) \
-  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_warn(format, ...) \
-  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_error(format, ...) \
-  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_fatal(format, ...) \
-  sky::utility::Logger::getInstance().log(sky::utility::Logger::Level::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define Log_debug(format, ...)                        \
+  sky::utility::Singleton<Logger>::getInstance().log( \
+      sky::utility::Logger::Level::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define Log_info(format, ...)                         \
+  sky::utility::Singleton<Logger>::getInstance().log( \
+      sky::utility::Logger::Level::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define Log_warn(format, ...)                         \
+  sky::utility::Singleton<Logger>::getInstance().log( \
+      sky::utility::Logger::Level::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define Log_error(format, ...)                        \
+  sky::utility::Singleton<Logger>::getInstance().log( \
+      sky::utility::Logger::Level::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define Log_fatal(format, ...)                        \
+  sky::utility::Singleton<Logger>::getInstance().log( \
+      sky::utility::Logger::Level::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
 namespace sky {
 namespace utility {
 
 class Logger {
+  friend class sky::utility::Singleton<Logger>;  // 允许 Singleton 访问私有构造函数
+
  public:
   enum class Level {
     DEBUG,
@@ -47,7 +56,7 @@ class Logger {
 
  public:
   /* 单例模式：全局访问点 */
-  static Logger &getInstance();
+  // static Logger &getInstance();
 
   void open(const std::string &filename);
 

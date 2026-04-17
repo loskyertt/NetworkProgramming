@@ -17,7 +17,8 @@ ServerSocket::ServerSocket(const std::string &ip, uint16_t port) : Socket() {
   // 1. 服务端监听 Socket（实例化父类对象后，就生成了一个 sockfd）
   std::println("ServerSocket constructor: listen_fd={}", m_sockfd);
 
-  // setNonBlocking(); // 设置为非阻塞 I/O 模式
+  // 配置项
+  setNonBlocking(); // 设置为非阻塞 I/O 模式
   setReceiveBufferSize(10 * 1024);
   setSendBufferSize(10 * 1024);
   setLinger(true, 0);

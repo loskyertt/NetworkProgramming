@@ -12,10 +12,10 @@
 
 namespace sky {
 namespace socket {
+/* 启动服务端的监听套接字：创建 listen_fd -> 绑定 -> 监听 */
 class ServerSocket : public Socket {
  public:
   ServerSocket() = delete;
-  /* 启动服务端的监听套接字 */
   ServerSocket(const std::string &ip, uint16_t port);
   ~ServerSocket() override = default;
 };

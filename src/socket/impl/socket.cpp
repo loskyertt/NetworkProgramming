@@ -20,6 +20,7 @@
 #include <string>
 
 using namespace sky::socket;
+using namespace sky::utility;
 
 Socket::Socket() : m_ip("127.0.0.1"), m_port(0), m_sockfd(-1) {
   // 实例化 Socket 对象时，就创建 sockfd
@@ -69,7 +70,7 @@ bool Socket::listen(int backlog) {
     Log_error("listen socket error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
-  Log_debug("listen socket success!");
+  Log_debug("Server started listening: %s:%d", m_ip.c_str(), m_port);
   return true;
 }
 
@@ -100,16 +101,30 @@ int Socket::accept() {
     return -1;
   }
 
-  Log_debug("accept socket success!");
+  Log_debug("accept new connection: fd = %d", connfd);
   return connfd;
 }
 
 ssize_t Socket::send(const void *buf, size_t len) {
-  return ::send(m_sockfd, buf, len, 0);
+  /**
+  * - __fd: conn_fd（来自 accept()）
+  * - __buf: 指向待发送数据缓冲区的指针
+  * - __n: 要发送的数据字节数
+  * - __flags: 控制发送行为的标志位（如 MSG_NOSIGNAL 避免 SIGPIPE 信号）
+  */
+  ssize_t bytes_sent = ::send(m_sockfd, buf, len, 0);
+  return bytes_sent;
 }
 
 ssize_t Socket::recv(void *buf, size_t len) {
-  return ::recv(m_sockfd, buf, len, 0);
+  /**
+  * - __fd: conn_fd（来自 accept()）
+  * - __buf: 指向接收缓冲区的指针，用于存放接收到的数据
+  * - __n: 缓冲区最大容量，即最多接收的字节数
+  * - __flags: 控制接收行为的标志位（如 MSG_PEEK、MSG_WAITALL 等）
+  */
+  ssize_t bytes_received = ::recv(m_sockfd, buf, len, 0);
+  return bytes_received;
 }
 
 void Socket::close() {

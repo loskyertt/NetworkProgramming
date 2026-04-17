@@ -15,6 +15,8 @@ add_library(socket STATIC
   socket/impl/socket.cpp
   socket/impl/server_socket.cpp
   socket/impl/client_socket.cpp
+  socket/impl/selector.cpp
+  socket/impl/scoket_handler.cpp
 )
 target_include_directories(socket
   PUBLIC  socket/include
