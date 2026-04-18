@@ -27,7 +27,7 @@ int main() {
 
   // 创建服务器监听套接字
   ServerSocket server("127.0.0.1", 8080);
-  int listen_fd = server.getSocketFd();
+  int listen_fd = server.getSockFd();
 
   // 初始化文件描述符集合
   fd_set fds;               // 主文件描述符集合

@@ -138,7 +138,7 @@ class Socket {
 
   // getters and setters
  public:
-  int getSocketFd() const { return m_sockfd; }
+  int getSockFd() const { return m_sockfd; }
 
   /**
    * @brief 让出 m_sockfd 的所有权，即 m_sockfd 不再由析构函数释放

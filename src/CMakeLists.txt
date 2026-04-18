@@ -15,8 +15,12 @@ add_library(socket STATIC
   socket/impl/socket.cpp
   socket/impl/server_socket.cpp
   socket/impl/client_socket.cpp
-  socket/impl/selector.cpp
-  socket/impl/scoket_handler.cpp
+  # --- select ---
+  socket/impl/select/selector.cpp
+  socket/impl/select/select_handler.cpp
+  # --- poll ---
+  socket/impl/poll/poller.cpp
+  socket/impl/poll/poll_handler.cpp
 )
 target_include_directories(socket
   PUBLIC  socket/include

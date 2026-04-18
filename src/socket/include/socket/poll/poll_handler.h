@@ -1,0 +1,85 @@
+/**
+ * @File    :   src/socket/include/socket/poll/scoket_handler.h
+ * @Time    :   2026/04/18 12:46:55
+ * @Author  :   loskyertt
+ * @Github  :   https://github.com/loskyertt
+ * @Desc    :   .....
+ */
+
+#pragma once
+
+#include "poller.h"
+#include "singleton.h"
+
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <map>
+
+namespace sky {
+namespace socket {
+
+class Socket;
+
+class PollHandler {
+  friend class sky::utility::Singleton<PollHandler>;  // 允许 Singleton 访问私有构造函数
+
+ private:
+  Socket *m_server = nullptr;             // 监听（对象）套接字
+  Poller m_poller;                        // 事件监控器（组合关系）
+  std::map<int, Socket *> m_connections;  // 连接（对象）套接字：fd -> Socket*
+                                          // 作用：统一管理所有客户端连接的生命周期
+
+ public:
+  /**
+  * @brief 包含操作：创建 listen_fd -> bind -> listen
+  *
+  * - @param ip 监听的 IP 地址
+  * - @param port 监听的端口号
+  */
+  void listen(const std::string &ip, uint16_t port);
+
+  /**
+   * @brief 添加套接字的 conn_fd 到监控集合，并建立 conn_fd 和 连接套接字对象的映射关系（map）
+   *
+   * - @param socket 要添加的套接字
+   */
+  void attach(Socket *socket);
+
+  /**
+   * @brief 仅从 I/O 监控中移除，不再监听这个 conn_fd 的事件，conn_fd 和 连接套接字对象的映射关系（map）仍然保留
+   *
+   * - @param socket 要删除的套接字
+   */
+  void detach(Socket *socket);
+
+  /**
+   * @brief 完全移除连接，包括监控集合和连接映射（map 容器）
+   *
+   * - @param socket 要移除的套接字
+   */
+  void remove(Socket *socket);
+
+  /**
+   * @brief 初始化 fds 数组，并且将 listen_fd 加入监控，然后处理事件
+   *
+   * - @param max_conns 最大连接数
+   * - @param wait_time 等待时间（毫秒），默认为 -1，表示阻塞等待
+   */
+  void handle(size_t max_conns, int wait_time = -1);
+
+ private:
+  /* 处理新连接 */
+  void handleNewConnection();
+
+  /* 处理客户端连接 */
+  void handleClientConnections();
+
+ private:
+  PollHandler();
+  ~PollHandler();
+  PollHandler(const PollHandler &) = delete;
+  PollHandler &operator=(const PollHandler &) = delete;
+};
+}  // namespace socket
+}  // namespace sky

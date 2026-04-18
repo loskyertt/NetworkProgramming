@@ -7,7 +7,7 @@
  */
 
 #include "logger/logger.h"
-#include "socket/scoket_handler.h"
+#include "socket/select/select_handler.h"
 #include "socket/server_socket.h"
 #include "socket/socket.h"
 
@@ -17,9 +17,9 @@
 using namespace sky::socket;
 using namespace sky::utility;
 
-SocketHandler::SocketHandler() = default;
+SelectHandler::SelectHandler() = default;
 
-SocketHandler::~SocketHandler() {
+SelectHandler::~SelectHandler() {
   if (m_server) {
     delete m_server;
     m_server = nullptr;
@@ -31,12 +31,12 @@ SocketHandler::~SocketHandler() {
   }
   m_connections.clear();
 
-  Log_info("SocketHandler destructor is completed");
+  Log_info("SelectHandler destructor is completed");
 }
 
-void SocketHandler::listen(const std::string &ip, uint16_t port) {
+void SelectHandler::listen(const std::string &ip, uint16_t port) {
   if (m_server) {
-    Log_warn("SocketHandler already listening");
+    Log_warn("SelectHandler already listening");
     delete m_server;
     m_server = nullptr;
   }
@@ -44,41 +44,41 @@ void SocketHandler::listen(const std::string &ip, uint16_t port) {
   m_server = new ServerSocket(ip, port);
 
   // 将服务器 socket 加入监控
-  m_selector.setFd(m_server->getSocketFd());
+  m_selector.setFd(m_server->getSockFd());
 }
 
-void SocketHandler::attach(Socket *socket) {
+void SelectHandler::attach(Socket *socket) {
   if (!socket) {
     Log_error("Socket is null!");
     return;
   }
 
-  int fd = socket->getSocketFd();
+  int fd = socket->getSockFd();
   m_connections[fd] = socket;  // 建立 conn_fd 和 连接套接字对象的映射关系
   m_selector.setFd(fd);
 
   Log_info("Socket attached: fd=%d", fd);
 }
 
-void SocketHandler::detach(Socket *socket) {
+void SelectHandler::detach(Socket *socket) {
   if (!socket) {
     Log_error("Socket is null!");
     return;
   }
 
-  int fd = socket->getSocketFd();
+  int fd = socket->getSockFd();
   m_selector.deleteFd(fd);
 
   Log_info("Socket detached: fd=%d", fd);
 }
 
-void SocketHandler::remove(Socket *socket) {
+void SelectHandler::remove(Socket *socket) {
   if (!socket) {
     Log_error("Socket is null!");
     return;
   }
 
-  int fd = socket->getSocketFd();
+  int fd = socket->getSockFd();
 
   // 从监控集合中移除
   m_selector.deleteFd(fd);
@@ -93,7 +93,7 @@ void SocketHandler::remove(Socket *socket) {
   delete socket;
 }
 
-void SocketHandler::handle(int wait_time) {
+void SelectHandler::handle(int wait_time) {
   if (!m_server) {
     Log_error("Server not initialized!");
     return;
@@ -114,7 +114,7 @@ void SocketHandler::handle(int wait_time) {
     Log_debug("select ok: ready_count=%d", ready_count);
 
     // 检查服务器 socket 是否有新连接
-    if (m_selector.isSet(m_server->getSocketFd())) {
+    if (m_selector.isSet(m_server->getSockFd())) {
       handleNewConnection();
     }
 
@@ -123,7 +123,7 @@ void SocketHandler::handle(int wait_time) {
   }
 }
 
-void SocketHandler::handleNewConnection() {
+void SelectHandler::handleNewConnection() {
   int conn_fd = m_server->accept();
   if (conn_fd < 0) {
     Log_error("accept error: errno=%d errmsg=%s", errno, strerror(errno));
@@ -135,7 +135,7 @@ void SocketHandler::handleNewConnection() {
   attach(conn_socket);
 }
 
-void SocketHandler::handleClientConnections() {
+void SelectHandler::handleClientConnections() {
   // 遍历所有连接，检查是否有数据可读
   for (auto it = m_connections.begin(); it != m_connections.end(); ++it) {
     int fd = it->first;

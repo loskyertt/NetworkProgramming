@@ -97,7 +97,7 @@ int main() {
   Singleton<Logger>::getInstance().open("log/server.log");
 
   ServerSocket server("127.0.0.1", 8080);
-  listen_fd = server.getSocketFd();  // 设置全局变量
+  listen_fd = server.getSockFd();  // 设置全局变量
 
   fd_set fds;
   fd_set read_fds;

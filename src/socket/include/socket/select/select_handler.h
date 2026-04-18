@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "socket/selector.h"
+#include "selector.h"
 #include "singleton.h"
 
 #include <cstdint>
@@ -20,8 +20,8 @@ namespace socket {
 
 class Socket;
 
-class SocketHandler {
-  friend class sky::utility::Singleton<SocketHandler>;  // 允许 Singleton 访问私有构造函数
+class SelectHandler {
+  friend class sky::utility::Singleton<SelectHandler>;  // 允许 Singleton 访问私有构造函数
 
  private:
   Socket *m_server = nullptr;             // 监听（对象）套接字
@@ -74,10 +74,10 @@ class SocketHandler {
   void handleClientConnections();
 
  private:
-  SocketHandler();
-  ~SocketHandler();
-  SocketHandler(const SocketHandler &) = delete;
-  SocketHandler &operator=(const SocketHandler &) = delete;
+  SelectHandler();
+  ~SelectHandler();
+  SelectHandler(const SelectHandler &) = delete;
+  SelectHandler &operator=(const SelectHandler &) = delete;
 };
 
 }  // namespace socket
