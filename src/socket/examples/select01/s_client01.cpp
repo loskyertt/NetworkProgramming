@@ -23,6 +23,7 @@ int main() {
 
   // 通信
   while (true) {
+    std::println("client_fd={}, Please input data:", client.getSockFd());
     std::string data;
     std::getline(std::cin, data);
 
@@ -32,6 +33,6 @@ int main() {
     // 接收数据
     char buf[1024] = {0};
     client.recv(buf, sizeof(buf));
-    std::println("recv: data={}", std::string(buf));
+    std::println("Received data from server: {}", std::string(buf));
   }
 }

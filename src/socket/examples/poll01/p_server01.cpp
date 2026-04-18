@@ -60,21 +60,20 @@ int main() {
       }
 
       // 找到空闲位置
-      int i;
-      for (i = 0; i < 1024; ++i) {
+      for (int i = 0; i < 1024; ++i) {
         if (fds[i].fd == -1) {
           fds[i].fd = conn_fd;
+          max_idx = std::max(max_idx, i);
           break;
         }
       }
-      max_idx = std::max(max_idx, i);
     }
 
     // 通信, 有客户端发送数据过来
     for (int i = 1; i <= max_idx; ++i) {
       if (fds[i].fd != -1 && (fds[i].revents & POLLIN)) {
         Socket client_conn(fds[i].fd);
-        client_conn.setNonBlocking();
+        client_conn.setNonBlocking();  // 设置为非阻塞
         client_conn.setRelease();
 
         // 有数据可读
@@ -90,10 +89,16 @@ int main() {
           std::println("Received {} bytes from fd={}, data={}", bytes_read, fds[i].fd, std::string(buffer));
 
           // 向客户端发送数据
-          std::string new_data = "Echo: " + std::string(buffer);
+          std::string new_data = "Echo " + std::string(buffer);
           client_conn.send(new_data.c_str(), new_data.size());
         } else {
+          if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            continue;  // 非阻塞模式正常情况
+          }
           Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));
+          // 还需要清理连接
+          client_conn.close();
+          fds[i].fd = -1;
         }
       }
     }

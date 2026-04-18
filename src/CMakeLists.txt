@@ -37,3 +37,5 @@ target_link_libraries(server PRIVATE socket utils)
 # 客户端
 add_executable(client client.cpp)
 target_link_libraries(client PRIVATE socket utils)
+
+add_subdirectory(socket/examples)

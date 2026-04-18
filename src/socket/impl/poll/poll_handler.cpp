@@ -158,7 +158,7 @@ void PollHandler::handleClientConnections() {
         std::println("Received {} bytes from conn_fd={}, data={}", bytes_read, fd, std::string(buffer));
 
         // 向客户端发送数据
-        std::string new_data = "Echo from server: " + std::string(buffer);
+        std::string new_data = "Echo " + std::string(buffer);
         conn_socket->send(new_data.c_str(), new_data.size());
       } else {
         Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));

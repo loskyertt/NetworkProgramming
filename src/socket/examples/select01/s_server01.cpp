@@ -106,7 +106,7 @@ int main() {
           std::println("Received {} bytes from fd={}, data={}", bytes_read, fd, std::string(buf));
 
           // 向客户端发送数据
-          std::string new_data = "Echo: " + std::string(buf);
+          std::string new_data = "Echo " + std::string(buf);
           client_conn.send(new_data.c_str(), new_data.size());
         } else {
           Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));

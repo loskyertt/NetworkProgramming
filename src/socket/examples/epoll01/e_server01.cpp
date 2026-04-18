@@ -3,7 +3,7 @@
  * @Time    :   2026/04/16 22:08:16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   epoll 示例（ET 模式，混用：listen_fd 为 LT；conn_fd 为 ET）
+ * @Desc    :   epoll 示例（LT 模式）
  */
 
 #include "logger/logger.h"
@@ -36,7 +36,7 @@ int main() {
 
   // 往 epoll 实例中添加需要检测的节点，现在只有 listen_fd
   struct epoll_event event;
-  event.events = EPOLLIN;  // 检测 listen_fd 读读缓冲区是否有数据
+  event.events = EPOLLIN;  // 只检测可读事件
   event.data.fd = listen_fd;
   if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_fd, &event) < 0) {
     Log_error("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
@@ -61,7 +61,8 @@ int main() {
 
     // 处理就绪事件
     for (int i = 0; i < ready_counts; ++i) {
-      // events[i].data.fd 就是就绪的文件描述符；events[i].events 就是就绪的事件类型
+      // events[i].data.fd 就是就绪的文件描述符
+      // events[i].events 就是就绪的事件类型
       int current_fd = events[i].data.fd;
       // 检查否有新连接
       if (current_fd == listen_fd) {
@@ -73,7 +74,8 @@ int main() {
         Log_debug("new connection: fd=%d", conn_fd);
 
         // 新得到的件描述符添加到 epol1 模型中，下轮循环的时候就可以被检测了
-        event.events = EPOLLIN | EPOLLET;  // 设置边沿模式
+        // Q：这里需要创建一个新的结构体（new_event） 来传递信息吗？还是说可以复用之前创建的 event？
+        event.events = EPOLLIN;
         event.data.fd = conn_fd;
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, conn_fd, &event) < 0) {
           Log_error("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
@@ -83,34 +85,28 @@ int main() {
         Socket client_conn(current_fd);
         client_conn.setNonBlocking();  // 设置为非阻塞
         client_conn.setRelease();      // 释放所有权，析构函数不再 close(fd)
+        char buf[1024] = {0};
 
-        char buf[5] = {0};  // 设置一个小缓冲区，后面循环读数据
-        std::string all_data;
-        while (true) {
-          ssize_t bytes_read = client_conn.recv(buf, sizeof(buf));
+        ssize_t bytes_read = client_conn.recv(buf, sizeof(buf));
 
-          if (bytes_read == 0) {
-            // 客户端关闭连接
-            Log_info("Client disconnected: fd=%d", current_fd);
-            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, current_fd, nullptr);
-            client_conn.close();  // 手动关闭
-            break;
-          } else if (bytes_read > 0) {
-            std::println("Received {} bytes from fd={}, data={}", bytes_read, current_fd, std::string(buf, bytes_read));
-            all_data += std::string(buf, bytes_read);
-          } else {
-            // 数据读完了
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-              // 向客户端发送数据
-              std::string new_data = "Echo " + all_data;
-              client_conn.send(new_data.c_str(), new_data.size());
-              break;  // 非阻塞模式正常情况
-            }
-            Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));
-            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, current_fd, nullptr);
-            client_conn.close();  // 手动关闭
-            break;
+        if (bytes_read == 0) {
+          // 客户端关闭连接
+          Log_info("Client disconnected: fd=%d", current_fd);
+          epoll_ctl(epoll_fd, EPOLL_CTL_DEL, current_fd, nullptr);
+          client_conn.close();  // 手动关闭
+        } else if (bytes_read > 0) {
+          std::println("Received {} bytes from fd={}, data={}", bytes_read, current_fd, std::string(buf, bytes_read));
+
+          // 向客户端发送数据
+          std::string new_data = "Echo " + std::string(buf, bytes_read);
+          client_conn.send(new_data.c_str(), new_data.size());
+        } else {
+          if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            continue;  // 非阻塞模式正常情况
           }
+          Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));
+          epoll_ctl(epoll_fd, EPOLL_CTL_DEL, current_fd, nullptr);
+          client_conn.close();  // 手动关闭
         }
       }
     }

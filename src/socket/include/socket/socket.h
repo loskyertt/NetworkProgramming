@@ -35,7 +35,7 @@ class Socket {
    *
    * - @param ip 绑定的 IP 地址
    * - @param port 绑定的端口号
-   * - @return true 绑定成功，false 绑定失败
+   * - @return true 绑定成功；false 绑定失败
    */
   bool bind(const std::string &ip, uint16_t port);
 
@@ -43,7 +43,7 @@ class Socket {
    * @brief 监听连接
    *
    * - @param backlog 最大待处理连接数，即连接请求队列（全连接队列）的长度
-   * - @return true 监听成功，false 监听失败
+   * - @return true 监听成功；false 监听失败
    */
   bool listen(int backlog = 128);
 
@@ -52,7 +52,7 @@ class Socket {
    *
    * - @param ip 服务器 IP 地址
    * - @param port 服务器端口号
-   * - @return true 连接成功，false 连接失败
+   * - @return true 连接成功；false 连接失败
    */
   bool connect(const std::string &ip, uint16_t port);
 
@@ -68,7 +68,10 @@ class Socket {
    *
    * - @param buf 指向待发送数据缓冲区的指针
    * - @param len 要发送的数据字节数
-   * - @return ssize_t 成功时返回实际发送的字节数（可能小于请求发送的字节数），失败时返回 -1 并设置 errno
+   *
+   * @return ssize_t
+   * - 成功时返回实际发送的字节数（可能小于请求发送的字节数）；
+   * - 失败时返回 -1 并设置 errno
    */
   ssize_t send(const void *buf, size_t len);
 
@@ -77,7 +80,11 @@ class Socket {
    *
    * - @param buf 指向接收缓冲区的指针，用于存放接收到的数据
    * - @param len 缓冲区最大容量，即最多接收的字节数
-   * - @return ssize_t 成功时返回接收到的字节数（可能小于请求的 len），连接关闭时返回 0，出错时返回 -1
+   *
+   * @return ssize_t
+   * - 成功时返回接收到的字节数（可能小于请求的 len）；
+   * - 连接关闭时返回 0；
+   * - 出错时返回 -1
    */
   ssize_t recv(void *buf, size_t len);
 
@@ -117,8 +124,7 @@ class Socket {
    *
    * - @param active 是否启用 linger
    * - @param seconds linger 时间（秒），当设置为 0 时，会关闭 TIME_WAIT 状态
-   * - @return true 设置成功
-   * - @return false 设置失败
+   * - @return true 设置成功；false 设置失败
    */
   bool setLinger(bool active, int seconds);
 

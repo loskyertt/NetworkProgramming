@@ -9,6 +9,7 @@
 #include "logger/logger.h"
 #include "socket/client_socket.h"
 
+#include <iostream>
 #include <string>
 #include <print>
 
@@ -20,12 +21,18 @@ int main() {
 
   ClientSocket client("127.0.0.1", 8080);
 
-  // 3. 发送数据
-  std::string data = "Hello, server!";
-  client.send(data.c_str(), data.size());
+  // 通信
+  while (true) {
+    std::println("client_fd={}, Please input data:", client.getSockFd());
+    std::string data;
+    std::getline(std::cin, data);
 
-  // 4. 接收数据
-  char buf[1024] = {0};
-  client.recv(buf, sizeof(buf));
-  std::println("recv: data={}", std::string(buf));
+    // 发送数据
+    client.send(data.c_str(), data.size());
+
+    // 接收数据
+    char buf[1024] = {0};
+    client.recv(buf, sizeof(buf));
+    std::println("Received data from server: {}", std::string(buf));
+  }
 }

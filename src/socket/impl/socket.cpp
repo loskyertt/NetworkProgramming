@@ -153,6 +153,7 @@ ssize_t Socket::send(const void *buf, size_t len) {
    * - __buf: 指向待发送数据缓冲区的指针
    * - __n: 要发送的数据字节数
    * - __flags: 控制发送行为的标志位（如 MSG_NOSIGNAL 避免 SIGPIPE 信号）
+   * - 返回类型：ssize_t — 成功时返回实际发送的字节数；失败时返回 -1。
    */
   ssize_t bytes_sent = ::send(m_sockfd, buf, len, 0);
   return bytes_sent;
@@ -164,6 +165,7 @@ ssize_t Socket::recv(void *buf, size_t len) {
    * - __buf: 指向接收缓冲区的指针，用于存放接收到的数据
    * - __n: 缓冲区最大容量，即最多接收的字节数
    * - __flags: 控制接收行为的标志位（如 MSG_PEEK、MSG_WAITALL 等）
+   * - 返回类型: ssize_t — 成功时返回接收到的字节数；连接关闭时返回 0；出错时返回 -1
    */
   ssize_t bytes_received = ::recv(m_sockfd, buf, len, 0);
   return bytes_received;
