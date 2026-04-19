@@ -10,6 +10,7 @@
 #include "socket/server_socket.h"
 
 #include <sys/epoll.h>
+#include <unistd.h>
 #include <array>
 #include <cstring>
 #include <print>
@@ -110,6 +111,10 @@ int main() {
         }
       }
     }
+  }
+
+  if (epoll_fd >= 0) {
+    ::close(epoll_fd);
   }
 
   return 0;

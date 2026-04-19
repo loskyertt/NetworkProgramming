@@ -3,7 +3,7 @@
  * @Time    :   2026/04/16 22:08:16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   epoll 示例（ET 模式，混用：listen_fd 为 LT；conn_fd 为 ET）
+ * @Desc    :   epoll 示例（使用封装好的 epoll）
  */
 
 #include "logger/logger.h"
@@ -56,7 +56,7 @@ int main() {
         }
         Log_debug("new connection: fd=%d", conn_fd);
 
-        // 新得到的件描述符添加到 epol1 模型中，下轮循环的时候就可以被检测了
+        // 新得到的件描述符添加到 epoll 模型中，下轮循环的时候就可以被检测了
         if (!epoller.setFd(conn_fd, EPOLLIN | EPOLLET)) {
           continue;
         }

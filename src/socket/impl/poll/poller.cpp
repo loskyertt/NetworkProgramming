@@ -8,8 +8,9 @@
 
 #include "socket/poll/poller.h"
 
-#include <cstddef>
 #include "logger/logger.h"
+
+#include <cstddef>
 
 using namespace sky::socket;
 using namespace sky::utility;
@@ -84,8 +85,7 @@ void Poller::deleteFd(int fd) {
 }
 
 int Poller::poll(int milliseconds) {
-  int ret = ::poll(m_fds.data(), m_fds.size(), milliseconds);
-  return ret;
+  return ::poll(m_fds.data(), m_fds.size(), milliseconds);
 }
 
 int Poller::getFd(size_t index) const {

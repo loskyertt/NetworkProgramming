@@ -21,6 +21,8 @@ add_library(socket STATIC
   # --- poll ---
   socket/impl/poll/poller.cpp
   socket/impl/poll/poll_handler.cpp
+  # --- epoll ---
+  socket/impl/epoll/epoller.cpp
 )
 target_include_directories(socket
   PUBLIC  socket/include
