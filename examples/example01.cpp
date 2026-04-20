@@ -8,51 +8,60 @@
 
 #include <unistd.h>
 #include <stdexcept>
-#include <utility>     // std::exchange
-#include <fcntl.h>     // 定义了 open(), O_RDONLY 等宏
-#include <sys/stat.h>  // 在某些系统中 open 需要这个头文件配合定义权限
+#include <utility>  // std::exchange, std::swap
 
-class FileDescriptor {
+class FdGuard {
  private:
-  int fd_;
+  int m_fd;
 
  public:
-  explicit FileDescriptor(int fd) : fd_(fd) {
-    if (fd_ < 0)
-      throw std::runtime_error("invalid fd");
+  // 1. 构造函数：获取资源
+  explicit FdGuard(int fd) : m_fd(fd) {
+    if (m_fd < 0)
+      throw std::runtime_error("Invalid fd");
   }
 
-  ~FileDescriptor() {
-    if (fd_ >= 0)
-      ::close(fd_);  // 析构时自动关闭
+  // 2. 析构函数：释放资源
+  // 必须标记为 noexcept，防止析构时抛出异常导致程序终止
+  ~FdGuard() noexcept {
+    if (m_fd >= 0) {
+      close(m_fd);
+    }
   }
 
-  // 禁止拷贝（fd 不能共享所有权）
-  FileDescriptor(const FileDescriptor &) = delete;
-  FileDescriptor &operator=(const FileDescriptor &) = delete;
+  // === 禁止拷贝 ===
+  // 拷贝会导致两个对象指向同一个 fd，析构时 double-close
+  FdGuard(const FdGuard &) = delete;
+  FdGuard &operator=(const FdGuard &) = delete;
 
-  // 允许移动（转移所有权）
-  FileDescriptor(FileDescriptor &&other) noexcept : fd_(std::exchange(other.fd_, -1)) {}
+  // === 支持移动 ===
+  // 移动 = 转移所有权，原对象失去 fd（置为 -1）
+  FdGuard(FdGuard &&other) noexcept : m_fd(std::exchange(other.m_fd, -1)) {}  // 拿走控制权，并将原对象置空
 
-  FileDescriptor &operator=(FileDescriptor &&other) noexcept {
+  FdGuard &operator=(FdGuard &&other) noexcept {
     if (this != &other) {
-      if (fd_ >= 0)
-        ::close(fd_);
-      fd_ = std::exchange(other.fd_, -1);
+      reset();  // 先释放自己持有的 fd
+      m_fd = std::exchange(other.m_fd, -1);
     }
     return *this;
   }
 
-  int get() const { return fd_; }
+  // === 访问器 ===
+  int get() const noexcept { return m_fd; }
+
+  bool valid() const noexcept { return m_fd >= 0; }
+
+  explicit operator bool() const noexcept { return valid(); }
+
+  // 释放所有权，返回裸 fd（由调用者负责 close）
+  int release() noexcept { return std::exchange(m_fd, -1); }
+
+  // 主动提前关闭
+  void reset(int new_fd = -1) noexcept {
+    if (m_fd >= 0)
+      ::close(m_fd);
+    m_fd = new_fd;
+  }
 };
 
-// 使用示例：函数返回时自动 close，即使抛出异常也安全
-void example() {
-  FileDescriptor f(::open("/tmp/test.txt", O_RDONLY));
-  // 使用 f.get() 进行读写...
-  // 不需要手动 close
-}
-
-int main() {
-  example();
-}
+int main() {}

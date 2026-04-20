@@ -32,13 +32,16 @@ target_link_libraries(socket
   PRIVATE utility
 )
 
-# thread 模块：
+# thread 模块：编译为静态库
 add_library(thread STATIC
   thread/impl/thread_pool.cpp
 )
 target_include_directories(thread
   PUBLIC  thread/include
   PRIVATE thread/impl
+)
+target_link_libraries(thread
+  PRIVATE utility
 )
 
 # 主可执行文件
@@ -49,7 +52,5 @@ target_link_libraries(server PRIVATE socket utility)
 add_executable(client client.cpp)
 target_link_libraries(client PRIVATE socket utility)
 
-add_subdirectory(socket/examples)
-
-add_executable(test_thread_pool test_thread_pool.cpp)
-target_link_libraries(test_thread_pool PRIVATE thread)
+add_subdirectory(socket/tests)
+add_subdirectory(thread/tests)

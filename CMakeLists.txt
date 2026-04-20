@@ -18,6 +18,6 @@ include(cmake/checkArch.cmake)
 
 # 子模块
 add_subdirectory(tests)
-# add_subdirectory(examples)
+add_subdirectory(examples)
 add_subdirectory(demo)
 add_subdirectory(src)
