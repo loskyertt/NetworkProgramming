@@ -7,7 +7,7 @@ foreach(v ${ALL_SRCS})
 
   add_executable(${TARGET_NAME} ${v})
 
-  target_link_libraries(${TARGET_NAME} PRIVATE utils)
+  target_link_libraries(${TARGET_NAME} PRIVATE utility)
 
   # target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Werror)
 endforeach()

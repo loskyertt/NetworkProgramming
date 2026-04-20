@@ -19,7 +19,7 @@ project_root/
 │   ├── core/               # 核心业务模块
 │   │   ├── include/        # 对外公开接口头文件
 │   │   └── impl/           # 内部实现源文件和内部私有头文件（外部不需要知道的细节）
-│   └── utils/              # 通用工具模块
+│   └── utility/              # 通用工具模块
 ├── include/                # 项目级公共头文件（供外部库或应用程序集成）
 ├── tests/                  # 测试代码
 │   ├── unit/               # 单元测试
@@ -143,7 +143,7 @@ endif()
 
 ```cmake
 if(MSVC)
-  set_target_properties(utils PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  set_target_properties(utility PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 ```
 

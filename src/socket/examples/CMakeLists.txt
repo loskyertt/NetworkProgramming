@@ -7,7 +7,7 @@ foreach(v ${ALL_SRCS})
 
   add_executable(${TARGET_NAME} ${v})
 
-  target_link_libraries(${TARGET_NAME} PRIVATE socket utils)
+  target_link_libraries(${TARGET_NAME} PRIVATE socket utility)
 
   # target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Werror)
 endforeach()

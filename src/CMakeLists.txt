@@ -1,13 +1,13 @@
 # src/CMakeLists.txt
 set(TARGET ${PROJECT_NAME}-${CMAKE_SYSTEM_NAME})
 
-# utils 模块：编译为静态库
-add_library(utils STATIC
-  utils/impl/logger.cpp
+# utility 模块：编译为静态库
+add_library(utility STATIC
+  utility/impl/logger.cpp
 )
-target_include_directories(utils
-  PUBLIC  utils/include
-  PRIVATE utils/impl
+target_include_directories(utility
+  PUBLIC  utility/include
+  PRIVATE utility/impl
 )
 
 # socket 模块：编译为静态库
@@ -29,15 +29,27 @@ target_include_directories(socket
   PRIVATE socket/impl
 )
 target_link_libraries(socket
-  PRIVATE utils
+  PRIVATE utility
+)
+
+# thread 模块：
+add_library(thread STATIC
+  thread/impl/thread_pool.cpp
+)
+target_include_directories(thread
+  PUBLIC  thread/include
+  PRIVATE thread/impl
 )
 
 # 主可执行文件
 # 服务端
 add_executable(server server.cpp)
-target_link_libraries(server PRIVATE socket utils)
+target_link_libraries(server PRIVATE socket utility)
 # 客户端
 add_executable(client client.cpp)
-target_link_libraries(client PRIVATE socket utils)
+target_link_libraries(client PRIVATE socket utility)
 
 add_subdirectory(socket/examples)
+
+add_executable(test_thread_pool test_thread_pool.cpp)
+target_link_libraries(test_thread_pool PRIVATE thread)
