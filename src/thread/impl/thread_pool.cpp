@@ -37,7 +37,7 @@ ThreadPool::ThreadPool(int min_thread, int max_thread)
 
 ThreadPool::~ThreadPool() {
   m_is_running.store(false);
-  m_task_condition.notify_all();
+  m_queue_condition.notify_all();
 
   for (auto &pair : m_workers) {
     std::thread &t = pair.second;
@@ -61,9 +61,9 @@ void ThreadPool::addTask(std::function<void(void)> task) {
   // TODO: 实现添加任务的逻辑
   {
     std::lock_guard<std::mutex> lock(m_task_mutex);
-    m_task_queue.emplace(task);
+    m_tasks.emplace(task);
   }
-  m_task_condition.notify_one();  // 任务队列不为空，就唤醒
+  m_queue_condition.notify_one();  // 任务队列不为空，就唤醒
 }
 
 void ThreadPool::doManage(void) {
@@ -77,7 +77,7 @@ void ThreadPool::doManage(void) {
     if (current_thread > m_min_thread.load() && idle_thread > current_thread / 2) {
       // 每次销毁两个线程
       m_exit_thread.store(2);
-      m_task_condition.notify_all();  // 会通知所有在等待的线程，让它们退出
+      m_queue_condition.notify_all();  // 会通知所有在等待的线程，让它们退出
       /* lock ids 开始 */
       {
         std::lock_guard<std::mutex> lock_ids(m_ids_mutex);
@@ -110,8 +110,8 @@ void ThreadPool::doWork(void) {
     {
       std::unique_lock<std::mutex> lock(m_task_mutex);
       // 只要任务队列为空，且线程池正在运行，就把线程挂起：线程从运行态 -> 阻塞态
-      while (m_task_queue.empty() && m_is_running.load()) {
-        m_task_condition.wait(lock);  // 让工作线程进入阻塞态
+      while (m_tasks.empty() && m_is_running.load()) {
+        m_queue_condition.wait(lock);  // 让工作线程进入阻塞态
         if (m_exit_thread.load() > 0) {
           --m_idle_thread;
           --m_current_thread;
@@ -125,10 +125,10 @@ void ThreadPool::doWork(void) {
           return;  // 让线程退出任务函数，即工作线程少了一个
         }
       }
-      if (!m_task_queue.empty()) {
+      if (!m_tasks.empty()) {
         std::println("---- 线程 {} 取出一个任务...", std::this_thread::get_id());
-        task = std::move(m_task_queue.front());
-        m_task_queue.pop();
+        task = std::move(m_tasks.front());
+        m_tasks.pop();
       }
     }
     if (task) {

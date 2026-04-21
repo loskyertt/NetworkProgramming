@@ -3,7 +3,7 @@
  * @Time    :   2026/04/19 22:40:23
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   .....
+ * @Desc    :   线程池测试
  */
 
 #include "thread/thread_pool.h"
@@ -15,16 +15,17 @@
 
 using namespace sky::thread;
 
-void calculate(int a, int b) {
-  std::println("calculate: {} + {} = {}", a, b, a + b);
+void calc(int a, int b) {
+  std::println("calc: {} + {} = {}", a, b, a + b);
   std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 int main() {
   ThreadPool pool;
   for (int i = 0; i < 10; ++i) {
-    pool.addTask(std::bind(calculate, i, i * 2));
+    pool.addTask(std::bind(calc, i, i * 2));  // 方式一
+    // pool.addTask([=]() { calc(i, i * 2); });  // 方式二（一定要用值传递）
   }
 
-  getchar();  // 阻塞主线程
+  getchar();
 }
