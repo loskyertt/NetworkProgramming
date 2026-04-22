@@ -36,15 +36,22 @@ class ThreadPool {
   std::atomic<int> m_idle_thread;     // 空闲线程数，一般 <= 当前线程数
   std::atomic<int> m_current_thread;  // 当前线程数
   std::atomic<int> m_exit_thread;     // 退出的线程数
+  std::atomic<int> m_active_task;     // 正在执行中的任务数
   std::atomic<bool> m_is_running;     // 线程池是否运行
 
   std::queue<std::function<void(void)>> m_tasks;  // 任务队列
   std::mutex m_task_mutex;                        // 任务队列互斥锁
   std::mutex m_ids_mutex;                         // 访问 m_ids 容器的互斥锁
   std::condition_variable m_queue_condition;      // 任务队列条件变量
+  std::condition_variable m_done_condition;       // 用于通知队列已清空
 
  public:
-  ThreadPool(int min_thread = 4, int max_thread = static_cast<int>(std::thread::hardware_concurrency()));
+  ThreadPool(const ThreadPool &) = delete;
+  ThreadPool &operator=(const ThreadPool &) = delete;
+  ThreadPool(ThreadPool &&) = delete;
+  ThreadPool &operator=(ThreadPool &&) = delete;
+
+  explicit ThreadPool(int min_thread = 4, int max_thread = static_cast<int>(std::thread::hardware_concurrency()));
   ~ThreadPool();
 
   /* 添加任务 -> 任务队列 */
@@ -70,6 +77,9 @@ class ThreadPool {
     m_queue_condition.notify_one();
     return res;
   }
+
+  /* 阻塞调用方，直到任务队列清空 */
+  void waitForDone();
 
  private:
   /* 管理者函数 */

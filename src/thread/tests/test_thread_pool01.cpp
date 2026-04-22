@@ -9,7 +9,6 @@
 #include "thread/thread_pool.h"
 
 #include <chrono>
-#include <cstdio>
 #include <print>
 #include <thread>
 
@@ -27,5 +26,6 @@ int main() {
     // pool.addTask([=]() { calc(i, i * 2); });  // 方式二（一定要用值传递）
   }
 
-  getchar();
+  // getchar();  // 手动控制：用 getchar() 阻塞，控制主线程的析构时间，确保子线程执行完任务
+  pool.waitForDone();
 }
