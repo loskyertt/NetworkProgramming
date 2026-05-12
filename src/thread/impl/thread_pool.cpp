@@ -29,6 +29,8 @@ ThreadPool::ThreadPool(int min_thread, int max_thread)
 
   // 创建管理者线程
   m_manager = new std::thread(&ThreadPool::doManage, this);
+  // &ThreadPool::doManage：获取成员函数的指针
+  // this：作为隐藏参数传递给成员函数，相当于 this->doManage()
 
   // 创建工作线程
   for (int i = 0; i < min_thread; i++) {
@@ -42,6 +44,8 @@ ThreadPool::~ThreadPool() {
   m_queue_condition.notify_all();
 
   // 这里要避免「调用析构函数的主线程」和「调用 doManage 的管理者线程」之间存在的竞争窗口
+  // 所以要把清理工作放在停止「管理者线程」之后，清理工作也会访问 m_workers
+
   // 第一步：先停止「管理者线程」，确保「管理者线程」不再修改 m_workers
   if (m_manager->joinable()) {
     std::println("**** 管理者线程 {} 将要被销毁 ....", m_manager->get_id());
@@ -50,7 +54,6 @@ ThreadPool::~ThreadPool() {
   delete m_manager;
   m_manager = nullptr;
 
-  // 所以要把清理工作放在停止「管理者线程」之后，清理工作也会访问 m_workers
   // 第二步：再清理工作线程
   for (auto &pair : m_workers) {
     std::thread &t = pair.second;
@@ -84,9 +87,9 @@ void ThreadPool::doManage(void) {
 
     // 第一步：清理上一轮已退出的线程（此时它们已有足够时间写入 m_ids）
     {
-      // 先在锁内取出 ids，然后释放锁
+      // 先在锁内取出 ids，然后释放锁（减少锁持有时间）
       std::vector<std::thread::id> ids_to_join;
-      /* lock_ids 作用域（和工作线程竞争）：只用于读取 m_ids */
+      /* lock_ids 作用域（和「工作线程」竞争）：只用于读取 m_ids */
       {
         std::lock_guard<std::mutex> lock_ids(m_ids_mutex);
         ids_to_join.swap(m_ids);  // swap 比 copy + clear 更高效
@@ -113,8 +116,10 @@ void ThreadPool::doManage(void) {
     if (current_thread > m_min_thread.load() && idle_thread > current_thread / 2) {
       // 每次销毁两个线程
       m_exit_thread.store(2);
-      m_queue_condition.notify_one();  // 唤醒一个
-      m_queue_condition.notify_one();  // 再唤醒一个
+
+      // 唤醒两个线程
+      m_queue_condition.notify_one();
+      m_queue_condition.notify_one();
     }
     // 没有空闲线程，且当前线程数小于最大线程数，就创建新线程
     // 和 m_max_thread 比较的作用是：防止在持续高负载下无限创建线程，耗尽系统的内存和文件描述符等资源。

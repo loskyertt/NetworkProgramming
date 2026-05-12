@@ -1,67 +1,58 @@
 /**
- * @File    :   examples/example01.cpp
- * @Time    :   2026/04/12 20:46:40
+ * @File    :   examples/example09.cpp
+ * @Time    :   2026/04/20 18:40:16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   RAII 封装文件描述符
+ * @Desc    :   条件变量：生产者-消费者模型
  */
 
-#include <unistd.h>
-#include <stdexcept>
-#include <utility>  // std::exchange, std::swap
+#include <print>
+#include <string>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
-class FdGuard {
- private:
-  int m_fd;
+std::queue<int> q;           // 缓冲区：生产者写入，消费者读取
+std::mutex mtx;              // 互斥锁：保护 q 的并发访问
+std::condition_variable cv;  // 条件变量：协调两个线程的执行时序
 
- public:
-  // 1. 构造函数：获取资源
-  explicit FdGuard(int fd) : m_fd(fd) {
-    if (m_fd < 0)
-      throw std::runtime_error("Invalid fd");
+void producer(const std::string &name) {
+  for (int i = 1; i <= 5; ++i) {
+    {
+      std::lock_guard<std::mutex> lock(mtx);  // ① 加锁
+      q.push(i);                              // ② 写入数据
+      std::println("Producer {} produced: {}", name, i);
+    }  // ③ lock_guard 析构，自动解锁
+
+    cv.notify_one();  // ④ 解锁之后再通知消费者
+
+    std::this_thread::sleep_for(  // ⑤ 模拟生产耗时
+        std::chrono::milliseconds(500));
   }
+}
 
-  // 2. 析构函数：释放资源
-  // 必须标记为 noexcept，防止析构时抛出异常导致程序终止
-  ~FdGuard() noexcept {
-    if (m_fd >= 0) {
-      close(m_fd);
-    }
+void consumer(const std::string &name) {
+  while (true) {
+    std::unique_lock<std::mutex> lock(mtx);  // ① 加锁
+
+    cv.wait(lock, [] { return !q.empty(); });  // ② 核心：等待条件
+
+    int val = q.front();  // ③ 取出数据
+    q.pop();
+
+    std::println("Consumer {} consumed: {}", name, val);
+
+    if (val == 5)
+      break;  // ④ 取到 5 就退出
   }
+  // ⑤ unique_lock 析构，自动解锁
+}
 
-  // === 禁止拷贝 ===
-  // 拷贝会导致两个对象指向同一个 fd，析构时 double-close
-  FdGuard(const FdGuard &) = delete;
-  FdGuard &operator=(const FdGuard &) = delete;
+int main() {
+  std::thread producer_thread1(producer, "Producer 1");  // 生产者 1
+  std::thread consumer_thread1(consumer, "Consumer 1");  // 消费者 1
 
-  // === 支持移动 ===
-  // 移动 = 转移所有权，原对象失去 fd（置为 -1）
-  FdGuard(FdGuard &&other) noexcept : m_fd(std::exchange(other.m_fd, -1)) {}  // 拿走控制权，并将原对象置空
-
-  FdGuard &operator=(FdGuard &&other) noexcept {
-    if (this != &other) {
-      reset();  // 先释放自己持有的 fd
-      m_fd = std::exchange(other.m_fd, -1);
-    }
-    return *this;
-  }
-
-  // === 访问器 ===
-  int get() const noexcept { return m_fd; }
-
-  bool valid() const noexcept { return m_fd >= 0; }
-
-  explicit operator bool() const noexcept { return valid(); }
-
-  // 释放所有权，返回裸 fd（由调用者负责 close）
-  int release() noexcept { return std::exchange(m_fd, -1); }
-
-  // 主动提前关闭
-  void reset(int new_fd = -1) noexcept {
-    if (m_fd >= 0)
-      ::close(m_fd);
-    m_fd = new_fd;
-  }
-};
-
-int main() {}
+  producer_thread1.join();
+  consumer_thread1.join();
+}

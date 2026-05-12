@@ -75,6 +75,7 @@ draft/
 
 # log for perf
 log
+logs
 tmp
 *.rdb
 *.svg

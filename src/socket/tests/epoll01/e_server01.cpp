@@ -24,6 +24,7 @@ int main() {
 
   // 创建服务器监听套接字
   ServerSocket server("127.0.0.1", 8080);
+  server.setNonBlocking();
   int listen_fd = server.getSockFd();
 
   // 现在只有监听的文件描述符

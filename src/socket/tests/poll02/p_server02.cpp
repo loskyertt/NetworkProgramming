@@ -28,6 +28,7 @@ int main() {
 
   // 创建服务器监听套接字
   ServerSocket server("127.0.0.1", 8080);
+  server.setNonBlocking();
   int listen_fd = server.getSockFd();
 
   // === 等待连接 -> 循环 ===

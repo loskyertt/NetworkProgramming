@@ -10,15 +10,19 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 
-if(MSVC)
-  add_compile_options(/utf-8)
-endif()
+# 开启 gtest_discover_tests 注册测试用例依赖
+enable_testing()
 
 # 脚本
-include(cmake/checkArch.cmake)
+# include(cmake/checkArch.cmake)
+include(cmake/set_g3log.cmake)
+
+# 第三方库
+find_package(GTest REQUIRED)
+
+add_subdirectory(3rdparty/g3log-2.6)
 
 # 子模块
-add_subdirectory(tests)
+# add_subdirectory(tests)
 add_subdirectory(examples)
-add_subdirectory(demo)
 add_subdirectory(src)
