@@ -6,3 +6,7 @@ foreach(v ${ALL_SRCS})
 
   add_executable(${TARGET_NAME} ${v})
 endforeach()
+
+# RPC 示例需要链接 rpc 库
+target_link_libraries(rpc_calculator_server PRIVATE rpc)
+target_link_libraries(rpc_calculator_client PRIVATE rpc)

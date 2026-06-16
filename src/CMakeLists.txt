@@ -10,6 +10,9 @@ add_subdirectory(socket)
 # thread 模块
 add_subdirectory(thread)
 
+# rpc 模块
+add_subdirectory(rpc)
+
 # 主可执行文件
 # 服务端
 add_executable(server server.cpp)
