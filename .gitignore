@@ -88,3 +88,6 @@ palette.map
 
 # public/index.html for httpd
 public/
+
+.gdb_history
+.codegraph
