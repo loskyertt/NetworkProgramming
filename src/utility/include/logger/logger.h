@@ -13,20 +13,20 @@
 #include <fstream>
 #include <string>
 
-#define Log_debug(format, ...)                        \
-  sky::utility::Singleton<Logger>::getInstance().log( \
+#define Log_debug(format, ...)                                \
+  sky::utility::Singleton<sky::utility::Logger>::getInstance().log( \
       sky::utility::Logger::Level::DEBUG, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_info(format, ...)                         \
-  sky::utility::Singleton<Logger>::getInstance().log( \
+#define Log_info(format, ...)                                 \
+  sky::utility::Singleton<sky::utility::Logger>::getInstance().log( \
       sky::utility::Logger::Level::INFO, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_warn(format, ...)                         \
-  sky::utility::Singleton<Logger>::getInstance().log( \
+#define Log_warn(format, ...)                                 \
+  sky::utility::Singleton<sky::utility::Logger>::getInstance().log( \
       sky::utility::Logger::Level::WARN, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_error(format, ...)                        \
-  sky::utility::Singleton<Logger>::getInstance().log( \
+#define Log_error(format, ...)                                \
+  sky::utility::Singleton<sky::utility::Logger>::getInstance().log( \
       sky::utility::Logger::Level::ERROR, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define Log_fatal(format, ...)                        \
-  sky::utility::Singleton<Logger>::getInstance().log( \
+#define Log_fatal(format, ...)                                \
+  sky::utility::Singleton<sky::utility::Logger>::getInstance().log( \
       sky::utility::Logger::Level::FATAL, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
 namespace sky {
