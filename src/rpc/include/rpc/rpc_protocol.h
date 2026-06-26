@@ -5,19 +5,20 @@
  * @Github  :   https://github.com/loskyertt
  * @Desc    :   RPC 协议定义：Header 结构体、常量、枚举类型
  *
- * 协议格式：定长 Header（24 字节）+ 变长 Body
+ * 协议格式：定长 Header + 变长 Body
  *
  * Request:
- *   Header (24B) + ServiceName (svc_len) + MethodName (meth_len) + Payload (payload_len)
+ *   Header + ServiceName (svc_len) + MethodName (meth_len) + Payload (payload_len)
  *
  * Response:
- *   Header (24B) + Payload (payload_len)
+ *   Header + Payload (payload_len)
  */
 
 #pragma once
 
 #include <cstddef>
 #include <cstdint>
+#include <string_view>
 
 namespace sky {
 namespace rpc {
@@ -39,6 +40,9 @@ struct RpcHeader {
 
 // Header 定长
 constexpr size_t RPC_HEADER_SIZE = sizeof(RpcHeader);
+
+// 单个请求/响应 body 的最大字节数。该限制避免异常 header 导致一次性分配过大内存。
+constexpr uint32_t RPC_MAX_BODY_SIZE = 16 * 1024 * 1024;
 
 // 魔数，"RPC" 的 ASCII 值
 /*
@@ -67,7 +71,23 @@ enum class RpcStatus : uint8_t {
   OK = 0,
   ERROR = 1,
   NOT_FOUND = 2,
+  BAD_REQUEST = 3,
 };
+
+inline std::string_view statusToString(uint8_t status) {
+  switch (static_cast<RpcStatus>(status)) {
+    case RpcStatus::OK:
+      return "OK";
+    case RpcStatus::ERROR:
+      return "ERROR";
+    case RpcStatus::NOT_FOUND:
+      return "NOT_FOUND";
+    case RpcStatus::BAD_REQUEST:
+      return "BAD_REQUEST";
+    default:
+      return "UNKNOWN";
+  }
+}
 
 }  // namespace rpc
 }  // namespace sky

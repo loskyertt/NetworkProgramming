@@ -24,7 +24,7 @@ struct RpcRequest {
 
 struct RpcResponse {
     uint32_t call_id = 0;
-    uint8_t status = 0;         // 0=OK, 1=ERROR, 2=NOT_FOUND
+    uint8_t status = 0;         // 0=OK, 1=ERROR, 2=NOT_FOUND, 3=BAD_REQUEST
     std::vector<char> payload;  // 序列化后的返回值
 };
 

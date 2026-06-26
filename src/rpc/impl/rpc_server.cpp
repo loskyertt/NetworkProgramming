@@ -19,6 +19,7 @@
 #include "rpc/rpc_server.h"
 #include "rpc/rpc_protocol.h"
 #include "rpc/rpc_message.h"
+#include "rpc/rpc_serializer.h"
 #include "socket/server_socket.h"
 #include "socket/epoll/epoller.h"
 #include "thread/thread_pool.h"
@@ -27,6 +28,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <cstring>
+#include <mutex>
 
 namespace sky {
 namespace rpc {
@@ -52,6 +54,7 @@ void RpcServer::registerHandler(const std::string &service,
                                 const std::string &method,
                                 RpcHandler handler) {
     std::string key = service + "." + method;
+    std::lock_guard<std::mutex> lock(m_handlers_mutex);
     m_handlers[key] = std::move(handler);
     Log_info("RPC handler registered: %s", key.c_str());
 }
@@ -65,21 +68,41 @@ void RpcServer::handleRequest(int conn_fd, const RpcRequest &req) {
     RpcResponse resp;
     resp.call_id = req.call_id;
 
-    auto it = m_handlers.find(key);
-    if (it == m_handlers.end()) {
+    RpcHandler handler;
+    {
+        std::lock_guard<std::mutex> lock(m_handlers_mutex);
+        auto it = m_handlers.find(key);
+        if (it != m_handlers.end()) {
+            handler = it->second;
+        }
+    }
+
+    if (!handler) {
         Log_warn("Handler not found: %s", key.c_str());
         resp.status = static_cast<uint8_t>(RpcStatus::NOT_FOUND);
+        RpcSerializer writer;
+        writer.writeString("handler not found: " + key);
+        resp.payload = writer.data();
         sendResponseToConn(conn_fd, resp);
         return;
     }
 
     // 调用 Handler
     try {
-        resp.payload = it->second(req.payload);
+        resp.payload = handler(req.payload);
         resp.status = static_cast<uint8_t>(RpcStatus::OK);
     } catch (const std::exception &e) {
         Log_error("Handler exception: %s : %s", key.c_str(), e.what());
         resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
+        RpcSerializer writer;
+        writer.writeString(e.what());
+        resp.payload = writer.data();
+    } catch (...) {
+        Log_error("Handler unknown exception: %s", key.c_str());
+        resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
+        RpcSerializer writer;
+        writer.writeString("unknown handler exception");
+        resp.payload = writer.data();
     }
 
     sendResponseToConn(conn_fd, resp);

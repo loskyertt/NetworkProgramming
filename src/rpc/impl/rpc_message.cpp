@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <cstddef>
 #include <cstring>
+#include <limits>
 #include <new>
 
 namespace sky {
@@ -39,6 +40,20 @@ static bool recvFull(int fd, char *buf, size_t n) {
     return true;
 }
 
+static bool hasValidBodySize(const RpcHeader &header) {
+    uint64_t body_size = static_cast<uint64_t>(header.svc_len) +
+                         static_cast<uint64_t>(header.meth_len) +
+                         static_cast<uint64_t>(header.payload_len);
+    return body_size <= RPC_MAX_BODY_SIZE;
+}
+
+static bool hasValidHeader(const RpcHeader &header, RpcMsgType expected_type) {
+    return header.magic == RPC_MAGIC &&
+           header.version == RPC_VERSION &&
+           header.msg_type == static_cast<uint8_t>(expected_type) &&
+           hasValidBodySize(header);
+}
+
 /**
  * @brief 向 fd 发送全部 n 字节（循环写保证全量发送）
  * @return true 发送成功；false 发送失败
@@ -58,6 +73,12 @@ static bool sendFull(int fd, const char *buf, size_t n) {
 // ---- Request 收发 ----
 
 bool sendRequest(int fd, const RpcRequest &req) {
+    if (req.service_name.size() > std::numeric_limits<uint32_t>::max() ||
+        req.method_name.size() > std::numeric_limits<uint32_t>::max() ||
+        req.payload.size() > std::numeric_limits<uint32_t>::max()) {
+        return false;
+    }
+
     RpcHeader header;
     std::memset(&header, 0, sizeof(header));
     header.magic       = RPC_MAGIC;
@@ -67,6 +88,10 @@ bool sendRequest(int fd, const RpcRequest &req) {
     header.svc_len     = static_cast<uint32_t>(req.service_name.size());
     header.meth_len    = static_cast<uint32_t>(req.method_name.size());
     header.payload_len = static_cast<uint32_t>(req.payload.size());
+
+    if (!hasValidBodySize(header)) {
+        return false;
+    }
 
     // 发送 Header
     if (!sendFull(fd, reinterpret_cast<const char *>(&header), sizeof(header))) {
@@ -93,8 +118,8 @@ bool recvRequest(int fd, RpcRequest &req) {
         return false;
     }
 
-    // 校验 Header
-    if (header.magic != RPC_MAGIC) {
+    // 校验 Header，避免把非 RPC 数据或异常长度当作正常请求处理。
+    if (!hasValidHeader(header, RpcMsgType::REQUEST)) {
         return false;
     }
 
@@ -121,6 +146,10 @@ bool recvRequest(int fd, RpcRequest &req) {
 // ---- Response 收发 ----
 
 bool sendResponse(int fd, const RpcResponse &resp) {
+    if (resp.payload.size() > std::numeric_limits<uint32_t>::max()) {
+        return false;
+    }
+
     RpcHeader header;
     std::memset(&header, 0, sizeof(header));
     header.magic       = RPC_MAGIC;
@@ -129,6 +158,10 @@ bool sendResponse(int fd, const RpcResponse &resp) {
     header.status      = resp.status;
     header.call_id     = resp.call_id;
     header.payload_len = static_cast<uint32_t>(resp.payload.size());
+
+    if (!hasValidBodySize(header)) {
+        return false;
+    }
 
     // 发送 Header
     if (!sendFull(fd, reinterpret_cast<const char *>(&header), sizeof(header))) {
@@ -147,8 +180,8 @@ bool recvResponse(int fd, RpcResponse &resp) {
         return false;
     }
 
-    // 校验 Header
-    if (header.magic != RPC_MAGIC) {
+    // 校验 Header，确保客户端只接收 RPC 响应包。
+    if (!hasValidHeader(header, RpcMsgType::RESPONSE)) {
         return false;
     }
 

@@ -13,6 +13,7 @@
 #pragma once
 
 #include "rpc/rpc_channel.h"
+#include "rpc/rpc_protocol.h"
 #include "rpc/rpc_serializer.h"
 
 #include <print>
@@ -21,6 +22,20 @@
 
 namespace sky {
 namespace rpc {
+
+inline std::string getRpcErrorMessage(const RpcResponse &resp) {
+  if (resp.payload.empty()) {
+    return std::string(statusToString(resp.status));
+  }
+
+  try {
+    RpcSerializer reader;
+    reader.reset(resp.payload);
+    return reader.readString();
+  } catch (...) {
+    return std::string(statusToString(resp.status));
+  }
+}
 
 class CalculatorStub {
  public:
@@ -36,8 +51,8 @@ class CalculatorStub {
 
     RpcResponse resp = m_channel.call("Calculator", "add", params);
 
-    if (resp.status != 0) {
-      throw std::runtime_error("RPC call Calculator.add failed");
+    if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
+      throw std::runtime_error("RPC call Calculator.add failed: " + getRpcErrorMessage(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);
@@ -52,8 +67,8 @@ class CalculatorStub {
 
     RpcResponse resp = m_channel.call("Calculator", "subtract", params);
 
-    if (resp.status != 0) {
-      throw std::runtime_error("RPC call Calculator.subtract failed");
+    if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
+      throw std::runtime_error("RPC call Calculator.subtract failed: " + getRpcErrorMessage(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);
@@ -68,8 +83,8 @@ class CalculatorStub {
 
     RpcResponse resp = m_channel.call("Calculator", "multiply", params);
 
-    if (resp.status != 0) {
-      throw std::runtime_error("RPC call Calculator.multiply failed");
+    if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
+      throw std::runtime_error("RPC call Calculator.multiply failed: " + getRpcErrorMessage(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);
@@ -84,8 +99,8 @@ class CalculatorStub {
 
     RpcResponse resp = m_channel.call("Calculator", "divide", params);
 
-    if (resp.status != 0) {
-      throw std::runtime_error("RPC call Calculator.divide failed: division by zero");
+    if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
+      throw std::runtime_error("RPC call Calculator.divide failed: " + getRpcErrorMessage(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);

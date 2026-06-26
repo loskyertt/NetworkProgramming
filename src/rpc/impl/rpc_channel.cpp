@@ -11,6 +11,7 @@
 
 #include "rpc/rpc_channel.h"
 #include "rpc/rpc_message.h"
+#include "rpc/rpc_protocol.h"
 #include "socket/client_socket.h"
 
 #include <utility>
@@ -34,15 +35,24 @@ RpcResponse RpcChannel::call(const RpcRequest &req) {
     // 发送请求
     if (!sendRequest(fd, send_req)) {
         RpcResponse resp;
-        resp.status = 1;  // ERROR
+        resp.call_id = send_req.call_id;
+        resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
         return resp;
     }
 
     // 接收响应
     RpcResponse resp;
     if (!recvResponse(fd, resp)) {
-        resp.status = 1;  // ERROR
+        resp.call_id = send_req.call_id;
+        resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
         return resp;
+    }
+
+    if (resp.call_id != send_req.call_id) {
+        RpcResponse mismatch_resp;
+        mismatch_resp.call_id = send_req.call_id;
+        mismatch_resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
+        return mismatch_resp;
     }
 
     return resp;

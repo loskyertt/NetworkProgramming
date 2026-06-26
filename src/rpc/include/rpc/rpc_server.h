@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -82,6 +83,7 @@ class RpcServer {
   thread::ThreadPool   *m_pool;
 
   std::unordered_map<std::string, RpcHandler> m_handlers;  // key = "service.method"
+  std::mutex m_handlers_mutex;
   std::atomic<bool> m_running{false};
 };
 
