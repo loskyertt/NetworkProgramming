@@ -13,6 +13,9 @@ add_subdirectory(thread)
 # rpc 模块
 add_subdirectory(rpc)
 
+# memory_pool 模块
+add_subdirectory(memory)
+
 # 主可执行文件
 # 服务端
 add_executable(server server.cpp)
