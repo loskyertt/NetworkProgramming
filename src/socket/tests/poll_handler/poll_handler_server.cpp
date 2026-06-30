@@ -1,9 +1,9 @@
 /**
- * @File    :   src/server.cpp
+ * @File    :   src/socket/tests/poll_handler/poll_handler_server.cpp
  * @Time    :   2026/04/16 22:08:16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   poll 示例
+ * @Desc    :   PollHandler 封装示例：使用封装好的 PollHandler 处理并发连接
  */
 
 #include "logger/logger.h"

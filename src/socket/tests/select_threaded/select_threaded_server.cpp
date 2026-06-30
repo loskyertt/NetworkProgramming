@@ -1,9 +1,9 @@
 /**
- * @File    :   src/socket/examples/select01/s_server01.cpp
+ * @File    :   src/socket/tests/select_threaded/select_threaded_server.cpp
  * @Time    :   2026/04/16 22:08:16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   多线程 slelect 并发
+ * @Desc    :   多线程 select 并发服务器示例
  */
 
 #include "logger/logger.h"

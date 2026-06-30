@@ -1,9 +1,9 @@
 /**
- * @File    :   src/socket/examples/simple/server01.cpp
+ * @File    :   src/socket/tests/echo_server.cpp
  * @Time    :   2026/04/14 21:15:33
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   使用封装好的 socket 来构造一个服务端案例
+ * @Desc    :   阻塞式服务器示例：使用封装好的 Socket 接收连接并回显数据
  */
 
 #include "logger/logger.h"

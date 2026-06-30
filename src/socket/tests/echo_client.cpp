@@ -1,9 +1,9 @@
 /**
- * @File    :   src/socket/examples/client.cpp
+ * @File    :   src/socket/tests/echo_client.cpp
  * @Time    :   2026/04/14 20:29:25
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   .....
+ * @Desc    :   客户端示例：使用封装好的 ClientSocket 连接服务器并发送/接收数据
  */
 
 #include "logger/logger.h"

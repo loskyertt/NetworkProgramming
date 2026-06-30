@@ -1,9 +1,9 @@
 /**
- * @File    :   src/server.cpp
+ * @File    :   src/socket/tests/epoll_et/epoll_et_server.cpp
  * @Time    :   2026/04/16 22:08:16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
- * @Desc    :   epoll 示例（使用封装好的 epoll）
+ * @Desc    :   epoll ET（边沿触发）模式示例：使用封装好的 EPoller
  */
 
 #include "logger/logger.h"
