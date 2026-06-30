@@ -1,5 +1,5 @@
 /**
- * @File    :   examples/rpc_calculator_server.cpp
+ * @File    :   src/rpc/examples/rpc_calculator_server.cpp
  * @Time    :   2026/06/16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
@@ -11,7 +11,7 @@
  * 构建 & 运行：
  *   mkdir -p build && cd build
  *   cmake .. && make rpc_calculator_server
- *   ./examples/rpc_calculator_server
+ *   ./src/rpc/examples/rpc_calculator_server
  */
 
 #include "rpc/rpc_server.h"
