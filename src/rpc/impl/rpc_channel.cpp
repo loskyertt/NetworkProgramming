@@ -14,6 +14,7 @@
 #include "rpc/rpc_protocol.h"
 #include "socket/client_socket.h"
 
+#include <atomic>
 #include <utility>
 
 namespace sky {
@@ -30,7 +31,7 @@ RpcResponse RpcChannel::call(const RpcRequest &req) {
 
     // 构造请求（使用自增 call_id）
     RpcRequest send_req = req;
-    send_req.call_id = m_next_call_id++;
+    send_req.call_id = m_next_call_id.fetch_add(1, std::memory_order_relaxed);
 
     // 发送请求
     if (!sendRequest(fd, send_req)) {

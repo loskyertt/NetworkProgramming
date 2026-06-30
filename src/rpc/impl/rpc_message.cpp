@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <cerrno>
 #include <cstddef>
 #include <cstring>
 #include <limits>
@@ -32,6 +33,9 @@ static bool recvFull(int fd, char *buf, size_t n) {
     size_t total = 0;
     while (total < n) {
         ssize_t nread = ::recv(fd, buf + total, n - total, 0);
+        if (nread < 0 && errno == EINTR) {
+            continue;
+        }
         if (nread <= 0) {
             return false;  // 连接关闭或出错
         }
@@ -48,10 +52,18 @@ static bool hasValidBodySize(const RpcHeader &header) {
 }
 
 static bool hasValidHeader(const RpcHeader &header, RpcMsgType expected_type) {
-    return header.magic == RPC_MAGIC &&
-           header.version == RPC_VERSION &&
-           header.msg_type == static_cast<uint8_t>(expected_type) &&
-           hasValidBodySize(header);
+    if (header.magic != RPC_MAGIC ||
+        header.version != RPC_VERSION ||
+        header.msg_type != static_cast<uint8_t>(expected_type) ||
+        !hasValidBodySize(header)) {
+        return false;
+    }
+
+    if (expected_type == RpcMsgType::REQUEST) {
+        return header.svc_len > 0 && header.meth_len > 0;
+    }
+
+    return header.svc_len == 0 && header.meth_len == 0;
 }
 
 /**
@@ -62,6 +74,9 @@ static bool sendFull(int fd, const char *buf, size_t n) {
     size_t total = 0;
     while (total < n) {
         ssize_t nwritten = ::send(fd, buf + total, n - total, 0);
+        if (nwritten < 0 && errno == EINTR) {
+            continue;
+        }
         if (nwritten <= 0) {
             return false;
         }

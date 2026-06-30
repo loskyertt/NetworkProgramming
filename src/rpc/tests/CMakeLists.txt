@@ -1,12 +1,14 @@
 # src/rpc/tests/CMakeLists.txt
-file(GLOB_RECURSE ALL_SRCS *.cpp)
-foreach(v ${ALL_SRCS})
-  message("Processing: ${v}")
-  get_filename_component(TARGET_NAME ${v} NAME_WE) # 生成目标名（去掉路径和扩展名）
 
-  add_executable(${TARGET_NAME} ${v})
+# 自动化测试
+set(RPC_TEST_TARGETS
+  test_rpc_serializer
+  test_rpc_message
+  test_rpc_channel_server
+)
+
+foreach(target ${RPC_TEST_TARGETS})
+  add_executable(${target} ${target}.cpp)
+  target_link_libraries(${target} PRIVATE rpc GTest::gtest_main)
+  add_test(NAME ${target} COMMAND ${target})
 endforeach()
-
-# RPC 示例需要链接 rpc 库
-target_link_libraries(rpc_calculator_server PRIVATE rpc)
-target_link_libraries(rpc_calculator_client PRIVATE rpc)

@@ -7,7 +7,50 @@
 - 参数和返回值通过二进制序列化在 TCP 连接上传输。
 - 请求和响应用 `call_id` 配对，并用状态码表达成功或失败。
 
-示例代码在 `examples/rpc_calculator_server.cpp`、`examples/rpc_calculator_client.cpp` 和 `examples/rpc_calculator_stub.h`。
+示例代码在 `src/rpc/examples/rpc_calculator_server.cpp`、`src/rpc/examples/rpc_calculator_client.cpp` 和 `src/rpc/examples/rpc_calculator_stub.h`。
+
+## 构建与测试
+
+在项目根目录执行：
+
+```bash
+cmake -B build -G Ninja
+cmake --build build --target rpc
+cmake --build build --target test_rpc_serializer test_rpc_message test_rpc_channel_server
+ctest --test-dir build --output-on-failure
+```
+
+如果只想运行 RPC 相关自动化测试：
+
+```bash
+ctest --test-dir build -R "test_rpc_" --output-on-failure
+```
+
+当前 `src/rpc/tests` 放自动化测试，`src/rpc/examples` 放手动示例：
+
+| 类型 | 文件 | 说明 |
+| --- | --- | --- |
+| 自动化测试 | `test_rpc_serializer.cpp` | 覆盖序列化、反序列化、异常边界 |
+| 自动化测试 | `test_rpc_message.cpp` | 使用 `socketpair` 覆盖 RPC request/response 收发和非法 header |
+| 自动化测试 | `test_rpc_channel_server.cpp` | 启动本地 `RpcServer`，覆盖正常调用、未注册方法和 handler 异常 |
+| 手动示例 | `examples/rpc_calculator_server.cpp` | Calculator RPC 服务端 |
+| 手动示例 | `examples/rpc_calculator_client.cpp` | Calculator RPC 客户端 |
+| 手动示例 | `examples/rpc_calculator_stub.h` | Calculator 客户端 Stub |
+
+手动运行 Calculator 示例：
+
+```bash
+cmake --build build --target rpc_calculator_server rpc_calculator_client
+./build/src/rpc/examples/rpc_calculator_server
+```
+
+另开一个终端执行：
+
+```bash
+./build/src/rpc/examples/rpc_calculator_client
+```
+
+默认监听地址是 `127.0.0.1:8080`。
 
 ## 什么是 RPC
 
@@ -50,11 +93,19 @@ src/rpc
 │   ├── rpc_serializer.h  # 简易二进制序列化器
 │   ├── rpc_channel.h     # 客户端调用通道
 │   └── rpc_server.h      # 服务端注册和分发
-└── impl
-    ├── rpc_message.cpp
-    ├── rpc_serializer.cpp
-    ├── rpc_channel.cpp
-    └── rpc_server.cpp
+├── impl
+│   ├── rpc_message.cpp
+│   ├── rpc_serializer.cpp
+│   ├── rpc_channel.cpp
+│   └── rpc_server.cpp
+├── tests
+│   ├── test_rpc_serializer.cpp
+│   ├── test_rpc_message.cpp
+│   └── test_rpc_channel_server.cpp
+└── examples
+    ├── rpc_calculator_server.cpp
+    ├── rpc_calculator_client.cpp
+    └── rpc_calculator_stub.h
 ```
 
 ## 整体调用流程
@@ -230,7 +281,7 @@ int b = reader.readInt32();
 
 客户端分两层。
 
-第一层是业务友好的 Stub，例如 `examples/rpc_calculator_stub.h`：
+第一层是业务友好的 Stub，例如 `src/rpc/examples/rpc_calculator_stub.h`：
 
 ```cpp
 int add(int a, int b) {
@@ -349,8 +400,17 @@ conn_fd 可读: recvRequest 读取完整请求
 - `version` 是否匹配。
 - `msg_type` 是否符合当前读取函数的预期。
 - body 总大小是否超过 `RPC_MAX_BODY_SIZE`。
+- 请求中的 `service_name` 和 `method_name` 是否非空。
+- 响应中的 `svc_len` 和 `meth_len` 是否为 `0`。
 
 客户端还会校验响应 `call_id` 是否等于请求 `call_id`，避免把不属于当前请求的响应当成正确结果。
+
+协议层限制：
+
+- 单个请求或响应 body 最大为 `RPC_MAX_BODY_SIZE`，当前是 `16 MiB`。
+- `recvFull` 和 `sendFull` 会处理 `EINTR` 并继续读写。
+- `RpcSerializer::writeString` 要求字符串长度不能超过 `uint32_t` 上限。
+- `RpcSerializer::writeRaw(nullptr, len)` 只允许 `len == 0`。
 
 ## 一次 add 调用的完整数据变化
 
@@ -407,6 +467,8 @@ int result = reader.readInt32(); // 8
 - 请求响应 `call_id` 匹配。
 - 基础状态码和错误信息返回。
 - epoll + 线程池服务端模型。
+- 协议 header 合法性校验和 body 大小限制。
+- `serializer`、`message`、`channel/server` 的自动化测试。
 
 尚未实现：
 
@@ -427,4 +489,4 @@ int result = reader.readInt32(); // 8
 3. 给响应错误 payload 设计固定格式，而不是约定为字符串。
 4. 引入 IDL 和代码生成，自动生成 Stub 和服务端注册代码。
 5. 使用 protobuf、flatbuffers 或 msgpack 替换手写序列化。
-6. 增加压测和单元测试，覆盖协议边界、错误包和并发请求。
+6. 增加压测，覆盖更高并发下的服务端吞吐和延迟。

@@ -15,4 +15,5 @@ target_link_libraries(rpc
   PUBLIC socket thread utility
 )
 
+add_subdirectory(examples)
 add_subdirectory(tests)

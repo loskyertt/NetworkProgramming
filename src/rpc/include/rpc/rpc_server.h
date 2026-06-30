@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -78,9 +79,9 @@ class RpcServer {
   /** 向连接写入响应 */
   void sendResponseToConn(int conn_fd, const RpcResponse &resp);
 
-  socket::ServerSocket *m_server;
-  socket::EPoller      *m_epoller;
-  thread::ThreadPool   *m_pool;
+  std::unique_ptr<socket::ServerSocket> m_server;
+  std::unique_ptr<socket::EPoller> m_epoller;
+  std::unique_ptr<thread::ThreadPool> m_pool;
 
   std::unordered_map<std::string, RpcHandler> m_handlers;  // key = "service.method"
   std::mutex m_handlers_mutex;

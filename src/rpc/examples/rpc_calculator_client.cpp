@@ -1,5 +1,5 @@
 /**
- * @File    :   examples/rpc_calculator_client.cpp
+ * @File    :   src/rpc/examples/rpc_calculator_client.cpp
  * @Time    :   2026/06/16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
@@ -9,7 +9,7 @@
  *
  * 构建 & 运行：
  *   cd build && make rpc_calculator_client
- *   ./examples/rpc_calculator_client
+ *   ./src/rpc/examples/rpc_calculator_client
  */
 
 #include "rpc_calculator_stub.h"

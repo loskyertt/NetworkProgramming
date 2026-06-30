@@ -19,6 +19,7 @@
 
 #include <cstring>
 #include <limits>
+#include <stdexcept>
 
 namespace sky {
 namespace rpc {
@@ -54,6 +55,9 @@ void RpcSerializer::writeBool(bool v) {
 }
 
 void RpcSerializer::writeString(const std::string &v) {
+    if (v.size() > std::numeric_limits<uint32_t>::max()) {
+        throw std::length_error("RpcSerializer: string too large");
+    }
     uint32_t len = static_cast<uint32_t>(v.size());
     writeUint32(len);
     if (len > 0) {
@@ -63,6 +67,9 @@ void RpcSerializer::writeString(const std::string &v) {
 
 void RpcSerializer::writeRaw(const char *data, size_t len) {
     if (len == 0) return;
+    if (data == nullptr) {
+        throw std::invalid_argument("RpcSerializer: null raw data");
+    }
     m_buffer.resize(m_buffer.size() + len);
     std::memcpy(m_buffer.data() + m_buffer.size() - len, data, len);
 }

@@ -28,6 +28,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <cstring>
+#include <memory>
 #include <mutex>
 
 namespace sky {
@@ -36,16 +37,13 @@ namespace rpc {
 // ============ 构造 / 析构 ============
 
 RpcServer::RpcServer(const std::string &ip, uint16_t port)
-    : m_server(new socket::ServerSocket(ip, port))
-    , m_epoller(new socket::EPoller())
-    , m_pool(new thread::ThreadPool()) {
+    : m_server(std::make_unique<socket::ServerSocket>(ip, port))
+    , m_epoller(std::make_unique<socket::EPoller>())
+    , m_pool(std::make_unique<thread::ThreadPool>()) {
 }
 
 RpcServer::~RpcServer() {
     stop();
-    delete m_pool;
-    delete m_epoller;
-    delete m_server;
 }
 
 // ============ Handler 注册 ============

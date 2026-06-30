@@ -1,5 +1,5 @@
 /**
- * @File    :   examples/rpc_calculator_stub.h
+ * @File    :   src/rpc/examples/rpc_calculator_stub.h
  * @Time    :   2026/06/16
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
