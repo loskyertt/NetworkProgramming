@@ -15,6 +15,7 @@
 #include "rpc_message.h"
 #include "rpc_serializer.h"
 
+#include <atomic>
 #include <string>
 
 namespace sky {
@@ -51,7 +52,7 @@ class RpcChannel {
  private:
   std::string m_ip;
   uint16_t m_port;
-  uint32_t m_next_call_id = 1;
+  std::atomic<uint32_t> m_next_call_id{1};
 };
 
 }  // namespace rpc
