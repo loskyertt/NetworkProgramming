@@ -2,6 +2,8 @@
 
 set -e
 
+cd ..
+
 BUILD_DIR="cmake-build-remote"
 
 usage() {
@@ -46,14 +48,14 @@ compile() {
 }
 
 case "$1" in
-    -b|--build)
-        build
-        ;;
-    -c|--compile)
-        compile
-        ;;
-    *)
-        usage
-        exit 1
-        ;;
+-b | --build)
+    build
+    ;;
+-c | --compile)
+    compile
+    ;;
+*)
+    usage
+    exit 1
+    ;;
 esac
