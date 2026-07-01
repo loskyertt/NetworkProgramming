@@ -13,7 +13,7 @@ using namespace sky::utility;
 int main() {
   auto &logger = Singleton<Logger>::getInstance();
 
-  logger.open("logs/test01.log");
+  logger.open("log/test01.log");
   // logger.setLevel( Singleton<Logger>::Level::ERROR);
   logger.setMax(1000);
 

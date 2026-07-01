@@ -20,7 +20,7 @@ int main() {
   auto worker = g3::LogWorker::createLogWorker();
 
   // 2. 添加自定义 Sink（关键：传递接收函数指针 &CustomFileSink::receiveLogMessage）
-  auto sink_handle = worker->addSink(std::make_unique<CustomFileSink>("./logs/test02.log"),
+  auto sink_handle = worker->addSink(std::make_unique<CustomFileSink>("./log/test02.log"),
       &CustomFileSink::receiveLogMessage  // [[2]] 指定接收函数
   );
 
