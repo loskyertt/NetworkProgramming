@@ -17,9 +17,8 @@ BasedOnStyle: Google
 # 访问修饰符（public/private/protected）相对于类定义的缩进偏移量（负值表示向左缩进）
 AccessModifierOffset: -1
 
-# 开括号后换行时的对齐策略：DontAlign 表示不使用对齐，而是使用 ContinuationIndentWidth 缩进
-# 修改原因：避免参数列表换行时出现不规则缩进，确保统一使用续行缩进宽度
-AlignAfterOpenBracket: DontAlign
+# 开括号后换行时的对齐策略：Align 表示使用对齐
+AlignAfterOpenBracket: Align
 
 # 连续赋值语句的对齐方式：None 表示不对齐（如 a = 1; b = 2; 不会强制 = 号对齐）
 AlignConsecutiveAssignments: None
