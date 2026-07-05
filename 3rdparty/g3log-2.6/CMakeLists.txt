@@ -97,18 +97,6 @@ message( STATUS "Software Version: ${VERSION}" )
 # ============================================================================
 include(${g3log_SOURCE_DIR}/Options.cmake)
 
-# ============================================================================
-# G3LOG iOS BUILD SUPPORT
-# ============================================================================
-include(${g3log_SOURCE_DIR}/iOSBuild.cmake)
-
-if(G3_IOS_LIB)
-  # G3_IOS_LIB is the pass used to generate all the other cmakefiles for the
-  # different architectures needed for the universal library. So we're done at
-  # here.
-  return()
-endif()
-
 # =========================================================================
 # G3 Macro definitions in Options.cmake are written to file this avoids having
 # to re-state your definitions in your source code or compile options
@@ -120,53 +108,7 @@ include(${g3log_SOURCE_DIR}/GenerateMacroDefinitionsFile.cmake)
 # ==========================================================================
 include(${g3log_SOURCE_DIR}/Build.cmake)
 
-# ============================================================================
-# EXAMPLE OPTIONS: By defauls is ON. This will create 'g3log-FATAL-* examples'
-# ============================================================================
-# DISABLE WITH:  -DADD_FATAL_EXAMPLE=OFF
-include(${g3log_SOURCE_DIR}/example/Example.cmake)
-
-# ============================================================================
-# PERFORMANCE TEST OPTIONS: Performance operations for g3log
-# ============================================================================
-# ENABLE WITH:  -DADD_G3LOG_PERFORMANCE=ON
-include(${g3log_SOURCE_DIR}/test_performance/Performance.cmake)
-
-# ==========================================================================
-# UNIT TEST OPTIONS:
-# ============================================================================
-# ENABLE WITH:  -DADD_G3LOG_UNIT_TEST=ON
-include(${g3log_SOURCE_DIR}/test_unit/Test.cmake)
-
-# ==========================================================================
-# CMAKE INSTALL AND CPACK OPTIONS:
-# ==========================================================================
-#
-# Alternative 1: Package handling is done AFTER all other CMake setup usage:
-# make package Check the output result and install accordingly.
-#
-# Alternative 2: usage: make; sudo make install
-#
-# For OSX you can also install an older version using 'brew install'
-#
-# ==========================================================================
-include(${g3log_SOURCE_DIR}/CPackLists.txt)
-
 if(MINGW)
   # this enables strerror_s
   add_definitions(-DMINGW_HAS_SECURE_API)
-endif()
-
-if(NOT MSVC)
-  message(
-    STATUS
-      "\n\n
-      *******************************************************************
-      Please do 'make clean-cmake' before next cmake generation.
-         It is a good idea to purge your build directory of CMake
-         generated cache files
-      *******************************************************************
-       ")
-  add_custom_target(clean-cmake COMMAND ${CMAKE_COMMAND} -P
-                                        ${g3log_SOURCE_DIR}/CleanAll.cmake)
 endif()
