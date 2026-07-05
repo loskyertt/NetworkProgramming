@@ -26,7 +26,7 @@ namespace rpc {
 #pragma pack(push, 1)  // 禁止字节对齐
 
 struct RpcHeader {
-  uint32_t magic;        // 魔数，标识 RPC 协议包：0x435052 ('RPC')
+  uint32_t magic;        // 魔数，标识 RPC 协议包：0x52504300 ('RPC')
   uint8_t version;       // 协议版本号：1
   uint8_t msg_type;      // 消息类型：0 = 请求，1 = 响应
   uint8_t status;        // 响应状态：0 = OK，1 = 错误，2 = 方法未找到
@@ -45,14 +45,16 @@ constexpr size_t RPC_HEADER_SIZE = sizeof(RpcHeader);
 constexpr uint32_t RPC_MAX_BODY_SIZE = 16 * 1024 * 1024;
 
 // 魔数，"RPC" 的 ASCII 值
-/*
-'R' = 82 = 0x52
-'P' = 80 = 0x50
-'C' = 67 = 0x43
-'0' = 48 = 0x30
-*/
+/**
+ * - 'R' = 82 = 0x52
+ * - 'P' = 80 = 0x50
+ * - 'C' = 67 = 0x43
+ * - '0' = 48 = 0x30
+ *
+ * @details 四个数字相“或” -> 0x52504330
+ */
 constexpr uint32_t RPC_MAGIC =
-    ('R' << 24) |  // 将 0x52 左移 24 位，移位后，二进制表示为：01010010 00000000 00000000 00000000
+    ('R' << 24) |  // 将 0x52 左移 24 位，移位后，二进制表示为：0101 0010 0000 0000 0000 0000 0000 0000
     ('P' << 16) |  // 将 0x50 左移 16 位
     ('C' << 8 ) |  // 同理
     ('0');
