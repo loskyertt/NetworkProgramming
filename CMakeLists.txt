@@ -18,9 +18,10 @@ enable_testing()
 include(cmake/set_g3log.cmake)
 
 # 第三方库
-find_package(GTest REQUIRED)
+#find_package(GTest REQUIRED)
 
 add_subdirectory(3rdparty/g3log-2.6)
+add_subdirectory(3rdparty/googletest-1.17.0)
 
 # 子模块
 # add_subdirectory(tests)
