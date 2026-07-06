@@ -14,7 +14,7 @@ set(CMAKE_C_STANDARD 11)
 enable_testing()
 
 # 脚本
-# include(cmake/checkArch.cmake)
+#include(cmake/check_arch.cmake)
 include(cmake/set_g3log.cmake)
 
 # 第三方库
