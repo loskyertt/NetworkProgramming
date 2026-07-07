@@ -4,7 +4,7 @@ LOG_DIRS=(
     "log"
 )
 
-DAYS_TO_KEEP=7
+DAYS_TO_KEEP=3
 
 for LOG_DIR in "${LOG_DIRS[@]}"; do
     if [ ! -d "$LOG_DIR" ]; then
@@ -12,7 +12,16 @@ for LOG_DIR in "${LOG_DIRS[@]}"; do
         continue
     fi
 
-    find "$LOG_DIR" -type f \( -name "*.log" -o -name "*.error" \) -mtime +"$DAYS_TO_KEEP" -exec rm -f {} \;
+    deleted=$(find "$LOG_DIR" \
+        -type f \
+        \( -name "*.log" -o -name "*.error" \) \
+        -mtime +"$DAYS_TO_KEEP" \
+        -print -delete)
 
-    echo "Logs older than $DAYS_TO_KEEP days in $LOG_DIR have been deleted."
+    if [ -n "$deleted" ]; then
+        echo "Deleted the following files:"
+        printf '%s\n' "$deleted"
+    else
+        echo "No old log files found in $LOG_DIR."
+    fi
 done
