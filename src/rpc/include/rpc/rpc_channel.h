@@ -24,10 +24,8 @@ namespace rpc {
 /**
  * @brief RPC 客户端通道。
  *
- * @details RpcChannel 负责连接服务端、分配 call_id、发送请求、接收响应，
- * 并校验响应中的 call_id 是否与本次请求匹配。
+ * @details RpcChannel 负责连接服务端、分配 call_id、发送请求、接收响应，并校验响应中的 call_id 是否与本次请求匹配。
  * 业务层通常不直接操作 socket，而是通过 Stub 调用该类完成一次 RPC。
- *
  * 当前实现采用短连接模型：每次 call 都创建一个新的 TCP 连接，收到响应后由底层 socket 生命周期关闭连接。
  */
 class RpcChannel {

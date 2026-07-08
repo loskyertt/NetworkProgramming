@@ -29,12 +29,11 @@ namespace rpc {
  * @brief 从 fd 循环读取 n 字节（保证读满或出错）
  *
  * @param fd socket 文件描述符
- * @param buf 接收数据的目标缓冲区
+ * @param buf 用户接收数据的缓冲区
  * @param n 希望读满的字节数
  *
  * @return true 读取成功；false 读取失败或连接关闭
  */
-
 static bool recvFull(int fd, char *buf, size_t n) {
   size_t total = 0;
   while (total < n) {
@@ -52,6 +51,7 @@ static bool recvFull(int fd, char *buf, size_t n) {
 }
 
 static bool hasValidBodySize(const RpcHeader &header) {
+  // 这里每个字段先转成 uint64_t 是为了防止 uint32_t 相加溢出
   uint64_t body_size = static_cast<uint64_t>(header.svc_len) + static_cast<uint64_t>(header.meth_len) +
       static_cast<uint64_t>(header.payload_len);
   return body_size <= RPC_MAX_BODY_SIZE;
@@ -63,15 +63,22 @@ static bool hasValidHeader(const RpcHeader &header, RpcMsgType expected_type) {
     return false;
   }
 
+  // RPC 请求必须知道要调用哪个服务（svc_len）、哪个方法（meth_len）
   if (expected_type == RpcMsgType::REQUEST) {
     return header.svc_len > 0 && header.meth_len > 0;
   }
 
+  // 响应包不能携带服务名和方法名
   return header.svc_len == 0 && header.meth_len == 0;
 }
 
 /**
  * @brief 向 fd 发送全部 n 字节（循环写保证全量发送）
+ *
+ * @param fd socket 文件描述符
+ * @param buf 用户发送数据的缓冲区
+ * @param n 希望发送出的字节数
+ *
  * @return true 发送成功；false 发送失败
  */
 static bool sendFull(int fd, const char *buf, size_t n) {

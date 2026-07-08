@@ -42,7 +42,7 @@ struct RpcHeader {
   uint32_t call_id;      // 调用 ID，用于将客户端请求与服务端响应配对
   uint32_t svc_len;      // 服务名长度，单位为字节；仅请求使用，响应中必须为 0
   uint32_t meth_len;     // 方法名长度，单位为字节；仅请求使用，响应中必须为 0
-  uint32_t payload_len;  // 载荷长度，单位为字节
+  uint32_t payload_len;  // 消息的业务载荷长度，单位为字节
 };
 
 #pragma pack(pop)
@@ -64,12 +64,12 @@ constexpr uint32_t RPC_MAX_BODY_SIZE = 16 * 1024 * 1024;
 
 /**
  * @brief 魔数，"RPC" 的 ASCII 值
- *
+ * 
+ * @details 四个数字相“或” -> 0x52504330
  * - 'R' = 82 = 0x52
  * - 'P' = 80 = 0x50
  * - 'C' = 67 = 0x43
  * - '0' = 48 = 0x30
- * @details 四个数字相“或” -> 0x52504330
  */
 constexpr uint32_t RPC_MAGIC =
     ('R' << 24) |  // 将 0x52 左移 24 位，移位后，二进制表示为：0101 0010 0000 0000 0000 0000 0000 0000
