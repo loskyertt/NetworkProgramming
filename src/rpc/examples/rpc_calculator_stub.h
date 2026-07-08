@@ -39,9 +39,7 @@ inline std::string getRpcErrorMessage(const RpcResponse &resp) {
 
 class CalculatorStub {
  public:
-  explicit CalculatorStub(const std::string &ip, uint16_t port)
-      : m_channel(ip, port) {
-  }
+  explicit CalculatorStub(const std::string &ip, uint16_t port) : m_channel(ip, port) {}
 
   /** 加法 */
   int add(int a, int b) {

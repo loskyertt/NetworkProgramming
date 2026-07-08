@@ -26,6 +26,7 @@ class SocketPair {
   }
 
   int first() const { return fds_[0]; }
+
   int second() const { return fds_[1]; }
 
  private:

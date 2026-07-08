@@ -20,54 +20,50 @@
 namespace sky {
 namespace rpc {
 
-RpcChannel::RpcChannel(const std::string &ip, uint16_t port)
-    : m_ip(ip), m_port(port) {
-}
+RpcChannel::RpcChannel(const std::string &ip, uint16_t port) : m_ip(ip), m_port(port) {}
 
 RpcResponse RpcChannel::call(const RpcRequest &req) {
-    // 每次调用创建新连接（服务端处理完请求后会关闭连接）
-    socket::ClientSocket client(m_ip, m_port);
-    int fd = client.getSockFd();
+  // 每次调用创建新连接（服务端处理完请求后会关闭连接）
+  socket::ClientSocket client(m_ip, m_port);
+  int fd = client.getSockFd();
 
-    // 构造请求（使用自增 call_id）
-    RpcRequest send_req = req;
-    send_req.call_id = m_next_call_id.fetch_add(1, std::memory_order_relaxed);
+  // 构造请求（使用自增 call_id）
+  RpcRequest send_req = req;
+  send_req.call_id = m_next_call_id.fetch_add(1, std::memory_order_relaxed);
 
-    // 发送请求
-    if (!sendRequest(fd, send_req)) {
-        RpcResponse resp;
-        resp.call_id = send_req.call_id;
-        resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
-        return resp;
-    }
-
-    // 接收响应
+  // 发送请求
+  if (!sendRequest(fd, send_req)) {
     RpcResponse resp;
-    if (!recvResponse(fd, resp)) {
-        resp.call_id = send_req.call_id;
-        resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
-        return resp;
-    }
-
-    if (resp.call_id != send_req.call_id) {
-        RpcResponse mismatch_resp;
-        mismatch_resp.call_id = send_req.call_id;
-        mismatch_resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
-        return mismatch_resp;
-    }
-
+    resp.call_id = send_req.call_id;
+    resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
     return resp;
+  }
+
+  // 接收响应
+  RpcResponse resp;
+  if (!recvResponse(fd, resp)) {
+    resp.call_id = send_req.call_id;
+    resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
+    return resp;
+  }
+
+  if (resp.call_id != send_req.call_id) {
+    RpcResponse mismatch_resp;
+    mismatch_resp.call_id = send_req.call_id;
+    mismatch_resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
+    return mismatch_resp;
+  }
+
+  return resp;
 }
 
-RpcResponse RpcChannel::call(const std::string &service,
-                             const std::string &method,
-                             RpcSerializer &params) {
-    RpcRequest req;
-    req.service_name = service;
-    req.method_name  = method;
-    req.payload      = params.data();
+RpcResponse RpcChannel::call(const std::string &service, const std::string &method, RpcSerializer &params) {
+  RpcRequest req;
+  req.service_name = service;
+  req.method_name = method;
+  req.payload = params.data();
 
-    return call(req);
+  return call(req);
 }
 
 }  // namespace rpc
