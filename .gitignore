@@ -89,5 +89,7 @@ palette.map
 # public/index.html for httpd
 public/
 
+# extra files
 .gdb_history
 .codegraph
+.obsidian/
