@@ -158,9 +158,9 @@ value = 9800
 ```
 
 > [!info]
-> `KeyValueType` 本质上类似 `std::pair<Key, Value>`，但使用 `key` 和 `value` 作为成员名比 `first` 和 `second` 更适合业务代码，可读性更高。
+> `KeyValueType` 本质上类似 `std::pair<first, second>`，但使用 `key` 和 `value` 作为成员名比 `first` 和 `second` 更适合业务代码，可读性更高。
 
-## 2.3 为什么 KeyValueType 里也要保存 key
+> [!question] 为什么 KeyValueType 里也要保存 key？
 
 `m_map` 的 key 已经是 `Key`：
 
@@ -198,7 +198,7 @@ for (const auto &item : rank) {
 > [!summary]
 > `m_map` 的 key 用于查找；`KeyValueType::key` 用于让 `m_set` 中的排序节点仍然携带身份信息。
 
-## 2.4 shared_ptr 节点指针
+## 2.3 shared_ptr 节点指针
 
 当前实现使用：
 
@@ -216,7 +216,7 @@ std::set<key_value_ptr, ValueLess> m_set;
 也就是说，`m_map` 和 `m_set` 指向同一个 `KeyValueType` 对象：
 
 ```text
-m_map[key] --------+
+m_map[key] -------+
                   |
                   v
           KeyValueType{key, value}

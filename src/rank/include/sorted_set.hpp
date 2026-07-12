@@ -20,6 +20,7 @@ class SortedSet {
   using value_type = Value;
   using size_type = std::size_t;
 
+ private:
   struct KeyValueType {
     key_type key;
     value_type value;
@@ -39,7 +40,6 @@ class SortedSet {
     }
   };
 
- private:
   static constexpr size_type default_top = 1000;  // Default rank size.
 
   size_type m_top;                                    // Rank size.
@@ -153,15 +153,15 @@ class SortedSet {
    * @return Rank, or 0 if the key does not exist.
    */
   size_type get_rank(const key_type &k) const {
-    if (!m_map.contains(k))
-      return 0;
-
-    size_type rank = 0;
-    for (auto it = m_set.rbegin(); it != m_set.rend(); ++it) {
-      ++rank;
-      if ((*it)->key == k)
-        return rank;
+    if (m_map.contains(k)) {
+      size_type rank = 0;
+      for (auto it = m_set.rbegin(); it != m_set.rend(); ++it) {
+        ++rank;
+        if ((*it)->key == k)
+          return rank;
+      }
     }
+
     return 0;
   }
 };
