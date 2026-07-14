@@ -17,9 +17,8 @@ BasedOnStyle: Google
 # 访问修饰符（public/private/protected）相对于类定义的缩进偏移量（负值表示向左缩进）
 AccessModifierOffset: -1
 
-# 开括号后换行时的对齐策略：DontAlign 表示不使用对齐，而是使用 ContinuationIndentWidth 缩进
-# 修改原因：避免参数列表换行时出现不规则缩进，确保统一使用续行缩进宽度
-AlignAfterOpenBracket: DontAlign
+# 开括号后换行时的使用对齐
+AlignAfterOpenBracket: True
 
 # 连续赋值语句的对齐方式：None 表示不对齐（如 a = 1; b = 2; 不会强制 = 号对齐）
 AlignConsecutiveAssignments: None
@@ -191,8 +190,8 @@ PenaltyReturnTypeOnItsOwnLine: 1000
 # 注释与代码格式细节
 # -----------------------------------------------------------------------------
 
-# 是否自动重排注释文本以适配列宽：false 表示保持注释原样，不自动换行重排
-ReflowComments: false
+# 表示保持注释原样，不自动换行重排
+ReflowComments: IndentOnly
 
 # 类/结构体成员定义块之间的分隔策略：Always 表示不同类型成员间强制空行分隔
 # 注意：此选项需 ClangFormat 14+ 版本支持

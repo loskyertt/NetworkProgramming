@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20.0)
 # 导出编译命令（用于 clangd）
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(geometry_app VERSION 0.0.1 LANGUAGES C CXX)
+project(network_programming VERSION 0.0.1 LANGUAGES C CXX)
 
 # 设置标准
 set(CMAKE_CXX_STANDARD 23)
@@ -14,13 +14,13 @@ set(CMAKE_C_STANDARD 11)
 enable_testing()
 
 # 脚本
-# include(cmake/checkArch.cmake)
-include(cmake/set_g3log.cmake)
+#include(cmake/check_arch.cmake)
 
 # 第三方库
-find_package(GTest REQUIRED)
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/3rdparty/g3log-2.6")
 
-add_subdirectory(3rdparty/g3log-2.6)
+find_package(g3log REQUIRED)
+find_package(GTest REQUIRED)
 
 # 子模块
 # add_subdirectory(tests)
