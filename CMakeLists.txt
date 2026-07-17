@@ -18,6 +18,7 @@ enable_testing()
 
 # 第三方库
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/3rdparty/g3log-2.6")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/3rdparty/googletest-1.17.0")
 
 find_package(g3log REQUIRED)
 find_package(GTest REQUIRED)
