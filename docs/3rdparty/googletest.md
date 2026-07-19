@@ -10,7 +10,7 @@ git clone https://github.com/KjellKod/g3log.git
 
 # 2. 构建和安装
 
-1. 构建：
+1. **构建**：
 
 ```shell
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./install
@@ -24,13 +24,13 @@ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./inst
 cmake -B build -LAH
 ```
 
-2. 编译
+2. **编译**：
 
 ```shell
 cmake --build build/ -j4
 ```
 
-3. 安装
+3. **安装**：
 
 ```shell
 cmake --install build/
