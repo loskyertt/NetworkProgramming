@@ -13,7 +13,7 @@
  *
  * 为什么 conn_fd 使用阻塞模式 + LT：
  *   我们每次读完整消息（header + body）后才处理，不存在 ET 模式下的数据残留问题。
- *   阻塞模式简化了 recvFull 的循环逻辑。
+ *   阻塞模式简化了 recv_full 的循环逻辑。
  */
 
 #include "rpc/rpc_server.h"
@@ -47,18 +47,18 @@ RpcServer::~RpcServer() {
 
 // ============ Handler 注册 ============
 
-void RpcServer::registerHandler(const std::string &service, const std::string &method, RpcHandler handler) {
+void RpcServer::register_handler(const std::string &service, const std::string &method, RpcHandler handler) {
   std::string key = service + "." + method;
   std::lock_guard<std::mutex> lock(m_handlers_mutex);
   m_handlers[key] = std::move(handler);
-  Log_info("RPC handler registered: %s", key.c_str());
+  LOG_INFO("RPC handler registered: %s", key.c_str());
 }
 
 // ============ 请求处理 ============
 
-void RpcServer::handleRequest(int conn_fd, const RpcRequest &req) {
+void RpcServer::handle_request(int conn_fd, const RpcRequest &req) {
   std::string key = req.service_name + "." + req.method_name;
-  Log_info("RPC request: %s (call_id=%u)", key.c_str(), req.call_id);
+  LOG_INFO("RPC request: %s (call_id=%u)", key.c_str(), req.call_id);
 
   RpcResponse resp;
   resp.call_id = req.call_id;
@@ -73,12 +73,12 @@ void RpcServer::handleRequest(int conn_fd, const RpcRequest &req) {
   }
 
   if (!handler) {
-    Log_warn("Handler not found: %s", key.c_str());
+    LOG_WARN("Handler not found: %s", key.c_str());
     resp.status = static_cast<uint8_t>(RpcStatus::NOT_FOUND);
     RpcSerializer writer;
-    writer.writeString("handler not found: " + key);
+    writer.write_string("handler not found: " + key);
     resp.payload = writer.data();
-    sendResponseToConn(conn_fd, resp);
+    send_response_to_conn(conn_fd, resp);
     return;
   }
 
@@ -87,26 +87,26 @@ void RpcServer::handleRequest(int conn_fd, const RpcRequest &req) {
     resp.payload = handler(req.payload);
     resp.status = static_cast<uint8_t>(RpcStatus::OK);
   } catch (const std::exception &e) {
-    Log_error("Handler exception: %s : %s", key.c_str(), e.what());
+    LOG_ERROR("Handler exception: %s : %s", key.c_str(), e.what());
     resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
     RpcSerializer writer;
-    writer.writeString(e.what());
+    writer.write_string(e.what());
     resp.payload = writer.data();
   } catch (...) {
-    Log_error("Handler unknown exception: %s", key.c_str());
+    LOG_ERROR("Handler unknown exception: %s", key.c_str());
     resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
     RpcSerializer writer;
-    writer.writeString("unknown handler exception");
+    writer.write_string("unknown handler exception");
     resp.payload = writer.data();
   }
 
-  sendResponseToConn(conn_fd, resp);
+  send_response_to_conn(conn_fd, resp);
 }
 
-void RpcServer::sendResponseToConn(int conn_fd, const RpcResponse &resp) {
-  bool ok = sendResponse(conn_fd, resp);
+void RpcServer::send_response_to_conn(int conn_fd, const RpcResponse &resp) {
+  bool ok = send_response(conn_fd, resp);
   if (!ok) {
-    Log_error("Failed to send response to fd=%d", conn_fd);
+    LOG_ERROR("Failed to send response to fd=%d", conn_fd);
   }
 }
 
@@ -115,80 +115,80 @@ void RpcServer::sendResponseToConn(int conn_fd, const RpcResponse &resp) {
 void RpcServer::start() {
   // 创建 epoll
   if (!m_epoller->create(1024)) {
-    Log_error("Failed to create epoll");
+    LOG_ERROR("Failed to create epoll");
     return;
   }
 
-  int listen_fd = m_server->getSockFd();
+  int listen_fd = m_server->get_sock_fd();
 
   // 将 listen_fd 加入 epoll（LT 模式）
-  if (!m_epoller->setFd(listen_fd, EPOLLIN)) {
-    Log_error("Failed to add listen_fd to epoll");
+  if (!m_epoller->set_fd(listen_fd, EPOLLIN)) {
+    LOG_ERROR("Failed to add listen_fd to epoll");
     return;
   }
 
   m_running = true;
-  Log_info("RpcServer started on fd=%d", listen_fd);
+  LOG_INFO("RpcServer started on fd=%d", listen_fd);
 
   // 主事件循环
   while (m_running) {
-    int ready_count = m_epoller->epoll(100);  // 100ms 超时，便于响应 stop
+    int ready_count = m_epoller->wait(100);  // 100ms 超时，便于响应 stop
     if (ready_count < 0) {
       if (errno == EINTR)
         continue;
-      Log_error("epoll_wait error: errno=%d errmsg=%s", errno, strerror(errno));
+      LOG_ERROR("epoll_wait error: errno=%d errmsg=%s", errno, strerror(errno));
       break;
     }
 
     for (int i = 0; i < ready_count; ++i) {
-      int current_fd = m_epoller->getFd(i);
+      int current_fd = m_epoller->get_fd(i);
 
       // 新连接
       if (current_fd == listen_fd) {
         int conn_fd = m_server->accept();
         if (conn_fd < 0) {
-          Log_error("accept error: errno=%d errmsg=%s", errno, strerror(errno));
+          LOG_ERROR("accept error: errno=%d errmsg=%s", errno, strerror(errno));
           continue;
         }
-        Log_info("New connection: fd=%d", conn_fd);
+        LOG_INFO("New connection: fd=%d", conn_fd);
 
         // 新连接加入 epoll（LT 模式，阻塞读取）
         socket::Socket conn_sock(conn_fd);
-        conn_sock.setRelease();  // 避免析构 close(fd)
-        if (!m_epoller->setFd(conn_fd, EPOLLIN)) {
-          Log_error("Failed to add conn_fd=%d to epoll", conn_fd);
+        conn_sock.set_release();  // 避免析构 close(fd)
+        if (!m_epoller->set_fd(conn_fd, EPOLLIN)) {
+          LOG_ERROR("Failed to add conn_fd=%d to epoll", conn_fd);
           ::close(conn_fd);
           continue;
         }
       } else {
         // 读取请求，读取成功后立即从 epoll 移除，避免重复触发
         socket::Socket conn_sock(current_fd);
-        conn_sock.setRelease();
+        conn_sock.set_release();
 
         RpcRequest req;
-        bool ok = recvRequest(current_fd, req);
+        bool ok = recv_request(current_fd, req);
 
         if (!ok) {
           // 连接断开或出错
-          Log_info("Client disconnected: fd=%d", current_fd);
-          m_epoller->deleteFd(current_fd);
+          LOG_INFO("Client disconnected: fd=%d", current_fd);
+          m_epoller->delete_fd(current_fd);
           ::close(current_fd);
           continue;
         }
 
         // 从 epoll 移除（请求已读取，不再监听此连接的事件）
-        m_epoller->deleteFd(current_fd);
+        m_epoller->delete_fd(current_fd);
 
         // 提交到线程池处理（处理完成后关闭连接）
-        m_pool->addTask([this, current_fd, req = std::move(req)]() {
-          this->handleRequest(current_fd, req);
+        m_pool->add_task([this, current_fd, req = std::move(req)]() {
+          this->handle_request(current_fd, req);
           ::close(current_fd);
         });
       }
     }
   }
 
-  Log_info("RpcServer stopped");
+  LOG_INFO("RpcServer stopped");
 }
 
 void RpcServer::stop() {

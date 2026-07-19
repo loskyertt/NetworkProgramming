@@ -25,14 +25,14 @@ RpcChannel::RpcChannel(const std::string &ip, uint16_t port) : m_ip(ip), m_port(
 RpcResponse RpcChannel::call(const RpcRequest &req) {
   // 每次调用创建新连接（服务端处理完请求后会关闭连接）
   socket::ClientSocket client(m_ip, m_port);
-  int fd = client.getSockFd();
+  int fd = client.get_sock_fd();
 
   // 构造请求（使用自增 call_id）
   RpcRequest send_req = req;
   send_req.call_id = m_next_call_id.fetch_add(1, std::memory_order_relaxed);
 
   // 发送请求
-  if (!sendRequest(fd, send_req)) {
+  if (!send_request(fd, send_req)) {
     RpcResponse resp;
     resp.call_id = send_req.call_id;
     resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
@@ -41,7 +41,7 @@ RpcResponse RpcChannel::call(const RpcRequest &req) {
 
   // 接收响应
   RpcResponse resp;
-  if (!recvResponse(fd, resp)) {
+  if (!recv_response(fd, resp)) {
     resp.call_id = send_req.call_id;
     resp.status = static_cast<uint8_t>(RpcStatus::ERROR);
     return resp;

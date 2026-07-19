@@ -14,9 +14,9 @@ using namespace sky::utility;
 
 int main() {
   // 初始化日志
-  Singleton<Logger>::getInstance().open("log/server.log");
+  Singleton<Logger>::instance().open("log/server.log");
 
-  auto &handler = Singleton<PollHandler>::getInstance();
+  auto &handler = Singleton<PollHandler>::instance();
 
   // 监听指定端口
   handler.listen("127.0.0.1", 8080);

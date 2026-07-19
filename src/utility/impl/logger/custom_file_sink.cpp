@@ -1,5 +1,5 @@
 /**
- * @File    :   src\utility\impl\logger\logger.cpp
+ * @File    :   src/utility/impl/logger/custom_file_sink.cpp
  * @Time    :   2026/04/24 13:52:15
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
@@ -8,6 +8,8 @@
 
 #include "logger/custom_file_sink.h"
 
+using namespace sky::utility;
+
 CustomFileSink::CustomFileSink(const std::string &log_file_path) : m_out(log_file_path, std::ios::app) {
   if (!m_out.is_open()) {
     throw std::runtime_error("Failed to open log file: " + log_file_path);
@@ -15,7 +17,7 @@ CustomFileSink::CustomFileSink(const std::string &log_file_path) : m_out(log_fil
 }
 
 // Sink 接收函数：接收 LogMessage 对象进行自定义格式化
-void CustomFileSink::receiveLogMessage(g3::LogMessageMover message) {
+void CustomFileSink::receive_log_message(g3::LogMessageMover message) {
   const auto &msg = message.get();
 
   // 1. 格式化时间：[2026-04-24 13:28:35]

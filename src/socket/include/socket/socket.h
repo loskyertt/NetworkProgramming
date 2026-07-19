@@ -98,7 +98,7 @@ class Socket {
    * @details 作用对象：listen_fd 和 conn_fd，在 I/O 多路复用中，两者都要设置
    * @return true 设置成功；false 设置失败
    */
-  bool setNonBlocking();
+  bool set_non_blocking();
 
   /**
    * @brief 设置发送缓冲区大小
@@ -107,7 +107,7 @@ class Socket {
    * @param size 缓冲区大小
    * @return true 设置成功；false 设置失败
    */
-  bool setSendBufferSize(size_t size);
+  bool set_send_buffer_size(size_t size);
 
   /**
    * @brief 设置接收缓冲区大小
@@ -116,7 +116,7 @@ class Socket {
    * @param size 缓冲区大小
    * @return true 设置成功；false 设置失败
    */
-  bool setReceiveBufferSize(size_t size);
+  bool set_receive_buffer_size(size_t size);
 
   /**
    * @brief 设置 linger
@@ -126,30 +126,30 @@ class Socket {
    * - @param seconds linger 时间（秒），当设置为 0 时，会关闭 TIME_WAIT 状态
    * - @return true 设置成功；false 设置失败
    */
-  bool setLinger(bool active, int seconds);
+  bool set_linger(bool active, int seconds);
 
   /**
    * @brief 设置 keepalive
    * @details 作用对象：conn_fd
    * @return true 设置成功；false 设置失败
    */
-  bool setKeepAlive();
+  bool set_keep_alive();
 
   /**
    * @brief 设置 reuse address
    * @details 作用对象：listen_fd，必须在 bind(...) 之前设置
    * @return true 设置成功；false 设置失败
    */
-  bool setReuseAddress();
+  bool set_reuse_address();
 
   // getters and setters
  public:
-  int getSockFd() const { return m_sockfd; }
+  int get_sock_fd() const { return m_sockfd; }
 
   /**
    * @brief 让出 m_sockfd 的所有权，即 m_sockfd 不再由析构函数释放
    */
-  void setRelease() { m_is_release = true; }
+  void set_release() { m_is_release = true; }
 };
 }  // namespace socket
 }  // namespace sky

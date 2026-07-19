@@ -15,27 +15,29 @@
 #include <map>
 #include <string>
 
-namespace sky {
-namespace socket {
+namespace sky::socket {
 
 class Socket;
 
 class SelectHandler {
-  friend class sky::utility::Singleton<SelectHandler>;  // 允许 Singleton 访问私有构造函数
+  friend class utility::Singleton<SelectHandler>;  // 允许 Singleton 访问私有构造函数
 
- private:
+private:
   Socket *m_server = nullptr;             // 监听（对象）套接字
   Selector m_selector;                    // 事件监控器（组合关系）
   std::map<int, Socket *> m_connections;  // 连接（对象）套接字：fd -> Socket*
                                           // 作用：统一管理所有客户端连接的生命周期
 
- public:
+public:
+  SelectHandler(const SelectHandler &)            = delete;
+  SelectHandler &operator=(const SelectHandler &) = delete;
+
   /**
-  * @brief 包含操作：创建 listen_fd -> bind -> listen -> 把 listen_fd 加入监控集合
-  *
-  * - @param ip 监听的 IP 地址
-  * - @param port 监听的端口号
-  */
+   * @brief 包含操作：创建 listen_fd -> bind -> listen -> 把 listen_fd 加入监控集合
+   *
+   * - @param ip 监听的 IP 地址
+   * - @param port 监听的端口号
+   */
   void listen(const std::string &ip, uint16_t port);
 
   /**
@@ -66,19 +68,16 @@ class SelectHandler {
    */
   void handle(int wait_time = -1);
 
- private:
+private:
   /* 处理新连接 */
   void handleNewConnection();
 
   /* 处理客户端连接 */
   void handleClientConnections();
 
- private:
+private:
   SelectHandler();
   ~SelectHandler();
-  SelectHandler(const SelectHandler &) = delete;
-  SelectHandler &operator=(const SelectHandler &) = delete;
 };
 
-}  // namespace socket
-}  // namespace sky
+}  // namespace sky::socket

@@ -30,8 +30,8 @@ int max_fd = 0;
 std::mutex conn_mutex;
 std::unordered_set<int> active_connections;
 
-void acceptConnection(ServerSocket &server) {
-  std::println("thread id of acceptConnection: {}", std::this_thread::get_id());
+void accept_connection(ServerSocket &server) {
+  std::println("thread id of accept_connection: {}", std::this_thread::get_id());
 
   int conn_fd = server.accept();
   if (conn_fd < 0) {
@@ -44,20 +44,20 @@ void acceptConnection(ServerSocket &server) {
     max_fd = std::max(max_fd, conn_fd);
   }
 
-  Log_info("New client connected: conn_fd=%d, max_fd=%d", conn_fd, max_fd);
+  LOG_INFO("New client connected: conn_fd=%d, max_fd=%d", conn_fd, max_fd);
 }
 
 void communication(int fd) {
   std::println("thread id of communication: {}", std::this_thread::get_id());
 
   Socket client_conn(fd);
-  client_conn.setRelease();
+  client_conn.set_release();
 
   char buf[1024] = {0};
   ssize_t bytes_read = client_conn.recv(buf, sizeof(buf));
 
   if (bytes_read == 0) {
-    Log_info("Client disconnected: fd=%d", fd);
+    LOG_INFO("Client disconnected: fd=%d", fd);
 
     std::lock_guard<std::mutex> lock(conn_mutex);
     active_connections.erase(fd);
@@ -77,7 +77,7 @@ void communication(int fd) {
     std::string new_data = "world";
     client_conn.send(new_data.c_str(), new_data.size());
   } else {
-    Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));
+    LOG_ERROR("recv error: errno=%d errmsg=%s", errno, strerror(errno));
 
     std::lock_guard<std::mutex> lock(conn_mutex);
     active_connections.erase(fd);
@@ -94,11 +94,11 @@ void communication(int fd) {
 }
 
 int main() {
-  Singleton<Logger>::getInstance().open("log/server.log");
+  Singleton<Logger>::instance().open("log/server.log");
 
   ServerSocket server("127.0.0.1", 8080);
-  server.setNonBlocking();
-  listen_fd = server.getSockFd();  // 设置全局变量
+  server.set_non_blocking();
+  listen_fd = server.get_sock_fd();  // 设置全局变量
 
   fd_set fds;
   fd_set read_fds;
@@ -123,17 +123,17 @@ int main() {
     int ready_count = select(max_fd + 1, &read_fds, nullptr, nullptr, &tv);
 
     if (ready_count < 0) {
-      Log_error("select error: errno=%d errmsg=%s", errno, strerror(errno));
+      LOG_ERROR("select error: errno=%d errmsg=%s", errno, strerror(errno));
       break;
     } else if (ready_count == 0) {
-      Log_debug("select timeout");
+      LOG_DEBUG("select timeout");
       continue;
     }
-    Log_debug("select ok: ready_count=%d", ready_count);
+    LOG_DEBUG("select ok: ready_count=%d", ready_count);
 
     if (FD_ISSET(listen_fd, &read_fds)) {
-      Log_debug("New connection request on listen_fd=%d", listen_fd);
-      std::thread t1(acceptConnection, std::ref(server));
+      LOG_DEBUG("New connection request on listen_fd=%d", listen_fd);
+      std::thread t1(accept_connection, std::ref(server));
       t1.detach();
     }
 
@@ -144,7 +144,7 @@ int main() {
 
       for (int fd : connections_copy) {
         if (FD_ISSET(fd, &read_fds)) {
-          Log_debug("Client data available on fd=%d", fd);
+          LOG_DEBUG("Client data available on fd=%d", fd);
 
           std::thread t2(communication, fd);
           t2.detach();

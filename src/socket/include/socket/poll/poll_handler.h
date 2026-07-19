@@ -16,27 +16,29 @@
 #include <string>
 #include <map>
 
-namespace sky {
-namespace socket {
+namespace sky::socket {
 
 class Socket;
 
 class PollHandler {
-  friend class sky::utility::Singleton<PollHandler>;  // 允许 Singleton 访问私有构造函数
+  friend class utility::Singleton<PollHandler>;  // 允许 Singleton 访问私有构造函数
 
- private:
+private:
   Socket *m_server = nullptr;             // 监听（对象）套接字
   Poller m_poller;                        // 事件监控器（组合关系）
   std::map<int, Socket *> m_connections;  // 连接（对象）套接字：fd -> Socket*
                                           // 作用：统一管理所有客户端连接的生命周期
 
- public:
+public:
+  PollHandler(const PollHandler &)            = delete;
+  PollHandler &operator=(const PollHandler &) = delete;
+
   /**
-  * @brief 包含操作：创建 listen_fd -> bind -> listen
-  *
-  * - @param ip 监听的 IP 地址
-  * - @param port 监听的端口号
-  */
+   * @brief 包含操作：创建 listen_fd -> bind -> listen
+   *
+   * - @param ip 监听的 IP 地址
+   * - @param port 监听的端口号
+   */
   void listen(const std::string &ip, uint16_t port);
 
   /**
@@ -68,18 +70,15 @@ class PollHandler {
    */
   void handle(size_t max_conns, int wait_time = -1);
 
- private:
+private:
   /* 处理新连接 */
   void handleNewConnection();
 
   /* 处理客户端连接 */
   void handleClientConnections();
 
- private:
+private:
   PollHandler();
   ~PollHandler();
-  PollHandler(const PollHandler &) = delete;
-  PollHandler &operator=(const PollHandler &) = delete;
 };
-}  // namespace socket
-}  // namespace sky
+}  // namespace sky::socket

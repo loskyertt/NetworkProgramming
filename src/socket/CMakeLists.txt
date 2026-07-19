@@ -19,7 +19,7 @@ target_include_directories(socket
   PRIVATE impl
 )
 target_link_libraries(socket
-  PRIVATE utility
+  PRIVATE utility::logger
 )
 
 add_subdirectory(tests)

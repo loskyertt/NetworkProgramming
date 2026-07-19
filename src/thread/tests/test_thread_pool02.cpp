@@ -6,7 +6,7 @@
  * @Desc    :   异步测试
  */
 
-#include "thread/thread_pool.h"
+#include "thread_pool//thread_pool.h"
 
 #include <chrono>
 #include <future>
@@ -27,7 +27,7 @@ int main() {
 
   ThreadPool pool;
   for (int i = 0; i < 10; ++i) {
-    res.emplace_back(pool.addTask(calc, i, i * 2));
+    res.emplace_back(pool.add_task(calc, i, i * 2));
   }
 
   for (auto &item : res) {

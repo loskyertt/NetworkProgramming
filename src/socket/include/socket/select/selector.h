@@ -27,10 +27,10 @@ class Selector {
   ~Selector();
 
   /* 将 fd 加入监控集合 */
-  void setFd(int fd);
+  void set_fd(int fd);
 
   /* 从监控集合中删除 fd */
-  void deleteFd(int fd);
+  void delete_fd(int fd);
 
   /**
    * @brief select 操作：监控 fd，返回就绪的 fd 数量（目前仅实现了监控 read_fds）
@@ -41,11 +41,11 @@ class Selector {
   int select(int milliseconds = -1);
 
   /* 检查 fd 是否就绪 */
-  bool isSet(int fd) { return FD_ISSET(fd, &m_read_fds); }
+  bool is_set(int fd) { return FD_ISSET(fd, &m_read_fds); }
 
   // getters and setters
  public:
-  int getMaxFd() const { return m_max_fd; }
+  int get_max_fd() const { return m_max_fd; }
 };
 
 }  // namespace socket

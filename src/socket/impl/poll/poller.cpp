@@ -31,7 +31,7 @@ void Poller::create(size_t size) {
   m_max_conns = 0;  // 此时还没有添加 listen_fd
 }
 
-bool Poller::isSetByFd(int fd) {
+bool Poller::is_set_by_fd(int fd) {
   auto it = m_fd_map.find(fd);
   if (it == m_fd_map.end()) {
     return false;
@@ -40,21 +40,21 @@ bool Poller::isSetByFd(int fd) {
   return m_fds[it->second].revents & POLLIN;
 }
 
-bool Poller::isSetByIndex(size_t index) {
+bool Poller::is_set_by_index(size_t index) {
   if (m_fds[index].fd != -1 && m_fds[index].revents & POLLIN) {
     return true;
   }
   return false;
 }
 
-void Poller::setFd(int fd) {
+void Poller::set_fd(int fd) {
   // 如果添加的是 listen_fd
   if (m_max_conns == 0) {
     m_fds[0].fd = fd;
     m_fds[0].events = POLLIN;
     m_fd_map[fd] = 0;
     m_max_conns = 1;
-    Log_debug("set listen_fd: %d", fd);
+    LOG_DEBUG("set listen_fd: %d", fd);
   }
   // 如果添加的是 conn_fd
   else {
@@ -64,14 +64,14 @@ void Poller::setFd(int fd) {
         m_fds[i].events = POLLIN;
         m_fd_map[fd] = i;
         m_max_conns = std::max(m_max_conns, i + 1);
-        Log_debug("set conn_fd: %d", fd);
+        LOG_DEBUG("set conn_fd: %d", fd);
         break;
       }
     }
   }
 }
 
-void Poller::deleteFd(int fd) {
+void Poller::delete_fd(int fd) {
   auto it = m_fd_map.find(fd);
   if (it != m_fd_map.end()) {
     // 从 m_fds 中移除
@@ -88,6 +88,6 @@ int Poller::poll(int milliseconds) {
   return ::poll(m_fds.data(), m_fds.size(), milliseconds);
 }
 
-int Poller::getFd(size_t index) const {
+int Poller::get_fd(size_t index) const {
   return m_fds[index].fd;
 }

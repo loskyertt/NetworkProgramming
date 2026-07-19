@@ -39,7 +39,7 @@ class Poller {
    * @param fd 文件描述符
    * @return true 就绪；false 不就绪
    */
-  bool isSetByFd(int fd);
+  bool is_set_by_fd(int fd);
 
   /**
    * @brief 检查 fds 中的文件描述符是否就绪
@@ -47,21 +47,21 @@ class Poller {
    * @param index 索引
    * @return true 就绪；false 不就绪
    */
-  bool isSetByIndex(size_t index);
+  bool is_set_by_index(size_t index);
 
   /**
    * @brief 向 fds 中添加文件描述符
    *
    * @param fd listen_fd 或者 conn_fd
    */
-  void setFd(int fd);
+  void set_fd(int fd);
 
   /**
    * @brief 从 fds 中删除文件描述符
    *
    * @param fd listen_fd 或者 conn_fd
    */
-  void deleteFd(int fd);
+  void delete_fd(int fd);
 
   /**
    * @brief poll 操作
@@ -84,7 +84,7 @@ class Poller {
    * @param index 索引
    * @return 文件描述符
    */
-  int getFd(size_t index) const;
+  int get_fd(size_t index) const;
 
   // getters and setters
  public:
@@ -93,7 +93,7 @@ class Poller {
    *
    * @return 最大连接数
    */
-  size_t getMaxConns() const { return m_max_conns; }
+  size_t get_max_conns() const { return m_max_conns; }
 };
 
 }  // namespace socket

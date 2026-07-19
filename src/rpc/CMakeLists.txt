@@ -12,7 +12,7 @@ target_include_directories(rpc
   PRIVATE impl
 )
 target_link_libraries(rpc
-  PUBLIC socket thread utility
+  PUBLIC socket thread utility::logger
 )
 
 add_subdirectory(examples)

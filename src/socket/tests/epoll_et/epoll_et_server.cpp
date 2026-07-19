@@ -19,35 +19,35 @@ using namespace sky::socket;
 
 int main() {
   // 初始化日志
-  Singleton<Logger>::getInstance().open("log/server.log");
+  Singleton<Logger>::instance().open("log/server.log");
 
   // 创建服务器监听套接字
   ServerSocket server("127.0.0.1", 8080);
-  server.setNonBlocking();
-  int listen_fd = server.getSockFd();
+  server.set_non_blocking();
+  int listen_fd = server.get_sock_fd();
 
   EPoller epoller;
   epoller.create(1024);
-  if (!epoller.setFd(listen_fd, EPOLLIN)) {
+  if (!epoller.set_fd(listen_fd, EPOLLIN)) {
     return 1;
   }
 
   // 主事件循环
   while (true) {
-    int ready_counts = epoller.epoll();
+    int ready_counts = epoller.wait();
     if (ready_counts < 0) {
-      Log_error("epoll_wait error: errno=%d errmsg=%s", errno, strerror(errno));
+      LOG_ERROR("epoll_wait error: errno=%d errmsg=%s", errno, strerror(errno));
       return 1;
     } else if (ready_counts == 0) {
-      Log_debug("epoll_wait timeout...");
+      LOG_DEBUG("epoll_wait timeout...");
       continue;
     }
-    Log_debug("epoll_wait ok: ready_count=%d", ready_counts);
+    LOG_DEBUG("epoll_wait ok: ready_count=%d", ready_counts);
 
     // 处理就绪事件
     for (int i = 0; i < ready_counts; ++i) {
       // events[i].data.fd 就是就绪的文件描述符；events[i].events 就是就绪的事件类型
-      int current_fd = epoller.getFd(i);
+      int current_fd = epoller.get_fd(i);
       // 检查否有新连接
       if (current_fd == listen_fd) {
         // 建立新的连接
@@ -55,19 +55,19 @@ int main() {
         if (conn_fd < 0) {
           continue;
         }
-        Log_debug("new connection: fd=%d", conn_fd);
+        LOG_DEBUG("new connection: fd=%d", conn_fd);
 
         // 新得到的件描述符添加到 epoll 模型中，下轮循环的时候就可以被检测了
-        if (!epoller.setFd(conn_fd, EPOLLIN | EPOLLET)) {
+        if (!epoller.set_fd(conn_fd, EPOLLIN | EPOLLET)) {
           continue;
         }
       } else {
         Socket client_conn(current_fd);
-        client_conn.setNonBlocking();  // 设置为非阻塞
-        client_conn.setRelease();      // 释放所有权，析构函数不再 close(fd)
+        client_conn.set_non_blocking();  // 设置为非阻塞
+        client_conn.set_release();      // 释放所有权，析构函数不再 close(fd)
 
         // 处理读事件
-        if (epoller.getEvents(i) & EPOLLIN) {
+        if (epoller.get_events(i) & EPOLLIN) {
           char buf[5] = {0};  // 设置一个小缓冲区，后面循环读数据
           std::string all_data;
           while (true) {
@@ -75,8 +75,8 @@ int main() {
 
             if (bytes_read == 0) {
               // 客户端关闭连接
-              Log_info("Client disconnected: fd=%d", current_fd);
-              epoller.deleteFd(current_fd);
+              LOG_INFO("Client disconnected: fd=%d", current_fd);
+              epoller.delete_fd(current_fd);
               client_conn.close();  // 手动关闭
               break;
             } else if (bytes_read > 0) {
@@ -93,8 +93,8 @@ int main() {
                 client_conn.send(new_data.c_str(), new_data.size());
                 break;  // 非阻塞模式正常情况
               }
-              Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));
-              epoller.deleteFd(current_fd);
+              LOG_ERROR("recv error: errno=%d errmsg=%s", errno, strerror(errno));
+              epoller.delete_fd(current_fd);
               client_conn.close();  // 手动关闭
               break;
             }

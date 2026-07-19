@@ -87,7 +87,7 @@ class RpcServer {
    * @param method 方法名，例如 "add"。
    * @param handler 业务处理函数；输入为请求 payload，输出为响应 payload。
    */
-  void registerHandler(const std::string &service, const std::string &method, RpcHandler handler);
+  void register_handler(const std::string &service, const std::string &method, RpcHandler handler);
 
   /**
    * @brief 启动 RPC 服务端事件循环。
@@ -111,7 +111,7 @@ class RpcServer {
    * @param conn_fd 客户端连接文件描述符。
    * @param req 已解析完成的 RPC 请求。
    */
-  void handleRequest(int conn_fd, const RpcRequest &req);
+  void handle_request(int conn_fd, const RpcRequest &req);
 
   /**
    * @brief 向客户端连接写入 RPC 响应。
@@ -119,7 +119,7 @@ class RpcServer {
    * @param conn_fd 客户端连接文件描述符。
    * @param resp 待发送的 RPC 响应。
    */
-  void sendResponseToConn(int conn_fd, const RpcResponse &resp);
+  void send_response_to_conn(int conn_fd, const RpcResponse &resp);
 
   std::unique_ptr<socket::ServerSocket> m_server;
   std::unique_ptr<socket::EPoller> m_epoller;

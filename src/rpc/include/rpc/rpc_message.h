@@ -45,10 +45,10 @@ struct RpcResponse {
  * @details 函数会依次写入协议头、服务名、方法名和 payload，并循环调用 send 直到所有字节写完或发生错误。
  *
  * @param fd 已连接的 socket 文件描述符。
- * @param req 待发送的 RPC 请求；service_name 和 method_name 必须非空，body 总大小不能超过 RPC_MAX_BODY_SIZE。
+ * @param req 待发送的 RPC 请求；service_name 和 method_name 必须非空，body 总大小不能超过 k_rpc_max_body_size。
  * @return 全部字节发送成功返回 true；连接断开、写入失败或长度非法返回 false。
  */
-bool sendRequest(int fd, const RpcRequest &req);
+bool send_request(int fd, const RpcRequest &req);
 
 /**
  * @brief 向文件描述符发送一个完整 RPC 响应。
@@ -56,10 +56,10 @@ bool sendRequest(int fd, const RpcRequest &req);
  * @details 函数会写入协议头和 payload，并循环调用 send 直到所有字节写完或发生错误。响应中的服务名和方法名长度字段会被编码为 0。
  *
  * @param fd 已连接的 socket 文件描述符。
- * @param resp 待发送的 RPC 响应；payload 大小不能超过 RPC_MAX_BODY_SIZE。
+ * @param resp 待发送的 RPC 响应；payload 大小不能超过 k_rpc_max_body_size。
  * @return 全部字节发送成功返回 true；连接断开、写入失败或长度非法返回 false。
  */
-bool sendResponse(int fd, const RpcResponse &resp);
+bool send_response(int fd, const RpcResponse &resp);
 
 /**
  * @brief 从文件描述符读取一个完整 RPC 请求。
@@ -71,7 +71,7 @@ bool sendResponse(int fd, const RpcResponse &resp);
  * @param req 输出参数；读取成功后填入调用 ID、服务名、方法名和 payload。
  * @return 成功读取并校验完整请求返回 true；连接关闭、读取失败或 header 校验失败返回 false。
  */
-bool recvRequest(int fd, RpcRequest &req);
+bool recv_request(int fd, RpcRequest &req);
 
 /**
  * @brief 从文件描述符读取一个完整 RPC 响应。
@@ -83,7 +83,7 @@ bool recvRequest(int fd, RpcRequest &req);
  * @param resp 输出参数；读取成功后填入调用 ID、状态码和 payload。
  * @return 成功读取并校验完整响应返回 true；连接关闭、读取失败或 header 校验失败返回 false。
  */
-bool recvResponse(int fd, RpcResponse &resp);
+bool recv_response(int fd, RpcResponse &resp);
 
 }  // namespace rpc
 }  // namespace sky

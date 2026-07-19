@@ -20,12 +20,12 @@ Selector::~Selector() {
   FD_ZERO(&m_fds);
 }
 
-void Selector::setFd(int fd) {
+void Selector::set_fd(int fd) {
   FD_SET(fd, &m_fds);
   m_max_fd = std::max(m_max_fd, fd);  // 更新 max
 }
 
-void Selector::deleteFd(int fd) {
+void Selector::delete_fd(int fd) {
   FD_CLR(fd, &m_fds);
 
   // 只有删除的是当前最大 fd 时才需要重新计算

@@ -25,7 +25,7 @@ using namespace sky::rpc;
 
 int main() {
   // 初始化日志
-  Singleton<Logger>::getInstance().open("log/rpc_server.log");
+  Singleton<Logger>::instance().open("log/rpc_server.log");
 
   // 创建 RPC 服务器
   RpcServer server("127.0.0.1", 8080);
@@ -33,64 +33,64 @@ int main() {
   // ===== 注册 Calculator 服务 =====
 
   // add(a, b) → a + b
-  server.registerHandler("Calculator", "add", [](const std::vector<char> &params) {
+  server.register_handler("Calculator", "add", [](const std::vector<char> &params) {
     RpcSerializer reader;
     reader.reset(params);
-    int a = reader.readInt32();
-    int b = reader.readInt32();
+    int a = reader.read_int32();
+    int b = reader.read_int32();
     int result = a + b;
-    Log_info("Calculator::add(%d, %d) = %d", a, b, result);
+    LOG_INFO("Calculator::add(%d, %d) = %d", a, b, result);
 
     RpcSerializer writer;
-    writer.writeInt32(result);
+    writer.write_int32(result);
     return writer.data();
   });
 
   // subtract(a, b) → a - b
-  server.registerHandler("Calculator", "subtract", [](const std::vector<char> &params) {
+  server.register_handler("Calculator", "subtract", [](const std::vector<char> &params) {
     RpcSerializer reader;
     reader.reset(params);
-    int a = reader.readInt32();
-    int b = reader.readInt32();
+    int a = reader.read_int32();
+    int b = reader.read_int32();
     int result = a - b;
-    Log_info("Calculator::subtract(%d, %d) = %d", a, b, result);
+    LOG_INFO("Calculator::subtract(%d, %d) = %d", a, b, result);
 
     RpcSerializer writer;
-    writer.writeInt32(result);
+    writer.write_int32(result);
     return writer.data();
   });
 
   // multiply(a, b) → a * b
-  server.registerHandler("Calculator", "multiply", [](const std::vector<char> &params) {
+  server.register_handler("Calculator", "multiply", [](const std::vector<char> &params) {
     RpcSerializer reader;
     reader.reset(params);
-    int a = reader.readInt32();
-    int b = reader.readInt32();
+    int a = reader.read_int32();
+    int b = reader.read_int32();
     int result = a * b;
-    Log_info("Calculator::multiply(%d, %d) = %d", a, b, result);
+    LOG_INFO("Calculator::multiply(%d, %d) = %d", a, b, result);
 
     RpcSerializer writer;
-    writer.writeInt32(result);
+    writer.write_int32(result);
     return writer.data();
   });
 
   // divide(a, b) → a / b，除数不能为 0
-  server.registerHandler("Calculator", "divide", [](const std::vector<char> &params) {
+  server.register_handler("Calculator", "divide", [](const std::vector<char> &params) {
     RpcSerializer reader;
     reader.reset(params);
-    int a = reader.readInt32();
-    int b = reader.readInt32();
+    int a = reader.read_int32();
+    int b = reader.read_int32();
 
     if (b == 0) {
-      Log_warn("Calculator::divide(%d, %d) division by zero!", a, b);
+      LOG_WARN("Calculator::divide(%d, %d) division by zero!", a, b);
       throw std::runtime_error("division by zero");
     }
 
     int result = a / b;
-    Log_info("Calculator::divide(%d, %d) = %d", a, b, result);
+    LOG_INFO("Calculator::divide(%d, %d) = %d", a, b, result);
 
     RpcSerializer writer;
-    writer.writeInt32(result);
+    writer.write_int32(result);
     return writer.data();
   });
 

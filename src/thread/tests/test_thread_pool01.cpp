@@ -6,7 +6,7 @@
  * @Desc    :   线程池测试
  */
 
-#include "thread/thread_pool.h"
+#include "thread_pool//thread_pool.h"
 
 #include <chrono>
 #include <print>
@@ -22,10 +22,10 @@ void calc(int a, int b) {
 int main() {
   ThreadPool pool;
   for (int i = 0; i < 10; ++i) {
-    pool.addTask(std::bind(calc, i, i * 2));  // 方式一
-    // pool.addTask([=]() { calc(i, i * 2); });  // 方式二（一定要用值传递）
+    pool.add_task(std::bind(calc, i, i * 2));  // 方式一
+    // pool.add_task([=]() { calc(i, i * 2); });  // 方式二（一定要用值传递）
   }
 
   // getchar();  // 手动控制：用 getchar() 阻塞，控制主线程的析构时间，确保子线程执行完任务
-  pool.waitForDone();
+  pool.wait_for_done();
 }

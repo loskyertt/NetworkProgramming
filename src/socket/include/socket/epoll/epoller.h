@@ -38,7 +38,7 @@ class EPoller {
    * @param event 事件类型
    * @return true: 添加成功, false: 添加失败
    */
-  bool setFd(int fd, uint32_t event);
+  bool set_fd(int fd, uint32_t event);
 
   /**
    * @brief 从监控集合中删除 fd
@@ -46,7 +46,7 @@ class EPoller {
    * @param fd 要删除的文件描述符
    * @return true: 删除成功, false: 删除失败
    */
-  bool deleteFd(int fd);
+  bool delete_fd(int fd);
 
   /**
    * @brief epoll_wait 操作
@@ -54,7 +54,7 @@ class EPoller {
    * - @param milliseconds 超时时间（毫秒），默认为 -1，表示阻塞等待
    * - @return 0: 超时, >0: 就绪的 fd 数量, -1: 错误
    */
-  int epoll(int milliseconds = -1);
+  int wait(int milliseconds = -1);
 
   /**
    * @brief 获取 fd
@@ -62,7 +62,7 @@ class EPoller {
    * @param index 事件数组索引
    * @return int 已就绪的 fd
    */
-  int getFd(int idx);
+  int get_fd(int idx);
 
   /**
    * @brief 获取事件
@@ -70,7 +70,7 @@ class EPoller {
    * @param idx 事件数组索引
    * @return uint32_t 已就绪 fd 对应的事件
    */
-  uint32_t getEvents(int idx);
+  uint32_t get_events(int idx);
 
  private:
   /**
@@ -80,7 +80,7 @@ class EPoller {
    * @param event 事件类型
    * @return true: 修改成功, false: 修改失败
    */
-  bool modFd(int fd, uint32_t event);
+  bool mod_fd(int fd, uint32_t event);
 };
 }  // namespace socket
 }  // namespace sky

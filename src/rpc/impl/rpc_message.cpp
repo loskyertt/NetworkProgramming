@@ -6,7 +6,7 @@
  * @Desc    :   RPC 消息收发实现
  *
  * 核心逻辑：TCP 是流协议，recv 可能分片到达，必须循环读
- *   先读满 RPC_HEADER_SIZE 字节 → 解析 Header → 再读满 Body
+ *   先读满 k_rpc_header_size 字节 → 解析 Header → 再读满 Body
  *   Header.payload_len 提供了消息定界
  */
 
@@ -34,7 +34,7 @@ namespace rpc {
  *
  * @return true 读取成功；false 读取失败或连接关闭
  */
-static bool recvFull(int fd, char *buf, size_t n) {
+static bool recv_full(int fd, char *buf, size_t n) {
   size_t total = 0;
   while (total < n) {
     // nread: number of bytes read
@@ -50,16 +50,16 @@ static bool recvFull(int fd, char *buf, size_t n) {
   return true;
 }
 
-static bool hasValidBodySize(const RpcHeader &header) {
+static bool has_valid_body_size(const RpcHeader &header) {
   // 这里每个字段先转成 uint64_t 是为了防止 uint32_t 相加溢出
   uint64_t body_size = static_cast<uint64_t>(header.svc_len) + static_cast<uint64_t>(header.meth_len) +
       static_cast<uint64_t>(header.payload_len);
-  return body_size <= RPC_MAX_BODY_SIZE;
+  return body_size <= k_rpc_max_body_size;
 }
 
-static bool hasValidHeader(const RpcHeader &header, RpcMsgType expected_type) {
-  if (header.magic != RPC_MAGIC || header.version != RPC_VERSION ||
-      header.msg_type != static_cast<uint8_t>(expected_type) || !hasValidBodySize(header)) {
+static bool has_valid_header(const RpcHeader &header, RpcMsgType expected_type) {
+  if (header.magic != k_rpc_magic || header.version != k_rpc_version ||
+      header.msg_type != static_cast<uint8_t>(expected_type) || !has_valid_body_size(header)) {
     return false;
   }
 
@@ -81,7 +81,7 @@ static bool hasValidHeader(const RpcHeader &header, RpcMsgType expected_type) {
  *
  * @return true 发送成功；false 发送失败
  */
-static bool sendFull(int fd, const char *buf, size_t n) {
+static bool send_full(int fd, const char *buf, size_t n) {
   size_t total = 0;
   while (total < n) {
     ssize_t nwritten = ::send(fd, buf + total, n - total, 0);
@@ -98,7 +98,7 @@ static bool sendFull(int fd, const char *buf, size_t n) {
 
 // ---- Request 收发 ----
 
-bool sendRequest(int fd, const RpcRequest &req) {
+bool send_request(int fd, const RpcRequest &req) {
   if (req.service_name.size() > std::numeric_limits<uint32_t>::max() ||
       req.method_name.size() > std::numeric_limits<uint32_t>::max() ||
       req.payload.size() > std::numeric_limits<uint32_t>::max()) {
@@ -107,45 +107,45 @@ bool sendRequest(int fd, const RpcRequest &req) {
 
   RpcHeader header;
   std::memset(&header, 0, sizeof(header));
-  header.magic = RPC_MAGIC;
-  header.version = RPC_VERSION;
+  header.magic = k_rpc_magic;
+  header.version = k_rpc_version;
   header.msg_type = static_cast<uint8_t>(RpcMsgType::REQUEST);
   header.call_id = req.call_id;
   header.svc_len = static_cast<uint32_t>(req.service_name.size());
   header.meth_len = static_cast<uint32_t>(req.method_name.size());
   header.payload_len = static_cast<uint32_t>(req.payload.size());
 
-  if (!hasValidBodySize(header)) {
+  if (!has_valid_body_size(header)) {
     return false;
   }
 
   // 发送 Header
-  if (!sendFull(fd, reinterpret_cast<const char *>(&header), sizeof(header))) {
+  if (!send_full(fd, reinterpret_cast<const char *>(&header), sizeof(header))) {
     return false;
   }
   // 发送 ServiceName
-  if (header.svc_len > 0 && !sendFull(fd, req.service_name.data(), header.svc_len)) {
+  if (header.svc_len > 0 && !send_full(fd, req.service_name.data(), header.svc_len)) {
     return false;
   }
   // 发送 MethodName
-  if (header.meth_len > 0 && !sendFull(fd, req.method_name.data(), header.meth_len)) {
+  if (header.meth_len > 0 && !send_full(fd, req.method_name.data(), header.meth_len)) {
     return false;
   }
   // 发送 Payload
-  if (header.payload_len > 0 && !sendFull(fd, req.payload.data(), header.payload_len)) {
+  if (header.payload_len > 0 && !send_full(fd, req.payload.data(), header.payload_len)) {
     return false;
   }
   return true;
 }
 
-bool recvRequest(int fd, RpcRequest &req) {
+bool recv_request(int fd, RpcRequest &req) {
   RpcHeader header;
-  if (!recvFull(fd, reinterpret_cast<char *>(&header), sizeof(header))) {
+  if (!recv_full(fd, reinterpret_cast<char *>(&header), sizeof(header))) {
     return false;
   }
 
   // 校验 Header，避免把非 RPC 数据或异常长度当作正常请求处理。
-  if (!hasValidHeader(header, RpcMsgType::REQUEST)) {
+  if (!has_valid_header(header, RpcMsgType::REQUEST)) {
     return false;
   }
 
@@ -155,15 +155,15 @@ bool recvRequest(int fd, RpcRequest &req) {
   req.payload.resize(header.payload_len);
 
   // 读取 ServiceName
-  if (header.svc_len > 0 && !recvFull(fd, req.service_name.data(), header.svc_len)) {
+  if (header.svc_len > 0 && !recv_full(fd, req.service_name.data(), header.svc_len)) {
     return false;
   }
   // 读取 MethodName
-  if (header.meth_len > 0 && !recvFull(fd, req.method_name.data(), header.meth_len)) {
+  if (header.meth_len > 0 && !recv_full(fd, req.method_name.data(), header.meth_len)) {
     return false;
   }
   // 读取 Payload
-  if (header.payload_len > 0 && !recvFull(fd, req.payload.data(), header.payload_len)) {
+  if (header.payload_len > 0 && !recv_full(fd, req.payload.data(), header.payload_len)) {
     return false;
   }
   return true;
@@ -171,43 +171,43 @@ bool recvRequest(int fd, RpcRequest &req) {
 
 // ---- Response 收发 ----
 
-bool sendResponse(int fd, const RpcResponse &resp) {
+bool send_response(int fd, const RpcResponse &resp) {
   if (resp.payload.size() > std::numeric_limits<uint32_t>::max()) {
     return false;
   }
 
   RpcHeader header;
   std::memset(&header, 0, sizeof(header));
-  header.magic = RPC_MAGIC;
-  header.version = RPC_VERSION;
+  header.magic = k_rpc_magic;
+  header.version = k_rpc_version;
   header.msg_type = static_cast<uint8_t>(RpcMsgType::RESPONSE);
   header.status = resp.status;
   header.call_id = resp.call_id;
   header.payload_len = static_cast<uint32_t>(resp.payload.size());
 
-  if (!hasValidBodySize(header)) {
+  if (!has_valid_body_size(header)) {
     return false;
   }
 
   // 发送 Header
-  if (!sendFull(fd, reinterpret_cast<const char *>(&header), sizeof(header))) {
+  if (!send_full(fd, reinterpret_cast<const char *>(&header), sizeof(header))) {
     return false;
   }
   // 发送 Payload
-  if (header.payload_len > 0 && !sendFull(fd, resp.payload.data(), header.payload_len)) {
+  if (header.payload_len > 0 && !send_full(fd, resp.payload.data(), header.payload_len)) {
     return false;
   }
   return true;
 }
 
-bool recvResponse(int fd, RpcResponse &resp) {
+bool recv_response(int fd, RpcResponse &resp) {
   RpcHeader header;
-  if (!recvFull(fd, reinterpret_cast<char *>(&header), sizeof(header))) {
+  if (!recv_full(fd, reinterpret_cast<char *>(&header), sizeof(header))) {
     return false;
   }
 
   // 校验 Header，确保客户端只接收 RPC 响应包。
-  if (!hasValidHeader(header, RpcMsgType::RESPONSE)) {
+  if (!has_valid_header(header, RpcMsgType::RESPONSE)) {
     return false;
   }
 
@@ -216,7 +216,7 @@ bool recvResponse(int fd, RpcResponse &resp) {
   resp.payload.resize(header.payload_len);
 
   // 读取 Payload
-  if (header.payload_len > 0 && !recvFull(fd, resp.payload.data(), header.payload_len)) {
+  if (header.payload_len > 0 && !recv_full(fd, resp.payload.data(), header.payload_len)) {
     return false;
   }
   return true;

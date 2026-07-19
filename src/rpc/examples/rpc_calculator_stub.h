@@ -23,17 +23,17 @@
 namespace sky {
 namespace rpc {
 
-inline std::string getRpcErrorMessage(const RpcResponse &resp) {
+inline std::string get_rpc_error_message(const RpcResponse &resp) {
   if (resp.payload.empty()) {
-    return std::string(statusToString(resp.status));
+    return std::string(status_to_string(resp.status));
   }
 
   try {
     RpcSerializer reader;
     reader.reset(resp.payload);
-    return reader.readString();
+    return reader.read_string();
   } catch (...) {
-    return std::string(statusToString(resp.status));
+    return std::string(status_to_string(resp.status));
   }
 }
 
@@ -44,65 +44,65 @@ class CalculatorStub {
   /** 加法 */
   int add(int a, int b) {
     RpcSerializer params;
-    params.writeInt32(a);
-    params.writeInt32(b);
+    params.write_int32(a);
+    params.write_int32(b);
 
     RpcResponse resp = m_channel.call("Calculator", "add", params);
 
     if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
-      throw std::runtime_error("RPC call Calculator.add failed: " + getRpcErrorMessage(resp));
+      throw std::runtime_error("RPC call Calculator.add failed: " + get_rpc_error_message(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);
-    return result.readInt32();
+    return result.read_int32();
   }
 
   /** 减法 */
   int subtract(int a, int b) {
     RpcSerializer params;
-    params.writeInt32(a);
-    params.writeInt32(b);
+    params.write_int32(a);
+    params.write_int32(b);
 
     RpcResponse resp = m_channel.call("Calculator", "subtract", params);
 
     if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
-      throw std::runtime_error("RPC call Calculator.subtract failed: " + getRpcErrorMessage(resp));
+      throw std::runtime_error("RPC call Calculator.subtract failed: " + get_rpc_error_message(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);
-    return result.readInt32();
+    return result.read_int32();
   }
 
   /** 乘法 */
   int multiply(int a, int b) {
     RpcSerializer params;
-    params.writeInt32(a);
-    params.writeInt32(b);
+    params.write_int32(a);
+    params.write_int32(b);
 
     RpcResponse resp = m_channel.call("Calculator", "multiply", params);
 
     if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
-      throw std::runtime_error("RPC call Calculator.multiply failed: " + getRpcErrorMessage(resp));
+      throw std::runtime_error("RPC call Calculator.multiply failed: " + get_rpc_error_message(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);
-    return result.readInt32();
+    return result.read_int32();
   }
 
   /** 除法 */
   int divide(int a, int b) {
     RpcSerializer params;
-    params.writeInt32(a);
-    params.writeInt32(b);
+    params.write_int32(a);
+    params.write_int32(b);
 
     RpcResponse resp = m_channel.call("Calculator", "divide", params);
 
     if (resp.status != static_cast<uint8_t>(RpcStatus::OK)) {
-      throw std::runtime_error("RPC call Calculator.divide failed: " + getRpcErrorMessage(resp));
+      throw std::runtime_error("RPC call Calculator.divide failed: " + get_rpc_error_message(resp));
     }
     RpcSerializer result;
     result.reset(resp.payload);
-    return result.readInt32();
+    return result.read_int32();
   }
 
  private:

@@ -1,5 +1,5 @@
 /**
- * @File    :   examples\g3log\example_g3log02.cpp
+ * @File    :   src/utility/tests/test_my_g3log.cpp
  * @Time    :   2026/04/24 14:26:19
  * @Author  :   loskyertt
  * @Github  :   https://github.com/loskyertt
@@ -15,13 +15,15 @@
 #include <iostream>
 #include <memory>
 
+using namespace sky::utility;
+
 int main() {
   // 1. 创建 LogWorker
   auto worker = g3::LogWorker::createLogWorker();
 
-  // 2. 添加自定义 Sink（关键：传递接收函数指针 &CustomFileSink::receiveLogMessage）
-  auto sink_handle = worker->addSink(std::make_unique<CustomFileSink>("./log/test02.log"),
-      &CustomFileSink::receiveLogMessage  // [[2]] 指定接收函数
+  // 2. 添加自定义 Sink（关键：传递接收函数指针 &CustomFileSink::receive_log_message）
+  auto sink_handle = worker->addSink(std::make_unique<CustomFileSink>("./log/test_my_g3log.log"),
+                                     &CustomFileSink::receive_log_message  // [[2]] 指定接收函数
   );
 
   // 3. 初始化全局日志系统

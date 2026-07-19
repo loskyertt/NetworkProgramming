@@ -20,19 +20,19 @@ using namespace sky::socket;
 
 int main() {
   // 初始化日志
-  Singleton<Logger>::getInstance().open("log/server.log");
+  Singleton<Logger>::instance().open("log/server.log");
 
   // 创建服务器监听套接字
   ServerSocket server("127.0.0.1", 8080);
-  server.setNonBlocking();
-  int listen_fd = server.getSockFd();
+  server.set_non_blocking();
+  int listen_fd = server.get_sock_fd();
 
   // 现在只有监听的文件描述符
   // 所有的文件描述符对应读写缓冲区状态都是委托内核进行检测的 epoll
   // 创建一个 epoll 模型
   int epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
-    Log_error("epoll_create1 error: errno=%d errmsg=%s", errno, strerror(errno));
+    LOG_ERROR("epoll_create1 error: errno=%d errmsg=%s", errno, strerror(errno));
     return 1;
   }
 
@@ -41,7 +41,7 @@ int main() {
   event.events = EPOLLIN;  // 只检测可读事件
   event.data.fd = listen_fd;
   if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_fd, &event) < 0) {
-    Log_error("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
+    LOG_ERROR("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
     return 1;
   }
 
@@ -53,13 +53,13 @@ int main() {
     // 内核会向 events[0] 到 events[ready_counts-1] 写入有效数据
     // events[ready_counts] 到 events[1023] 保持不变（不会被访问）
     if (ready_counts < 0) {
-      Log_error("epoll_wait error: errno=%d errmsg=%s", errno, strerror(errno));
+      LOG_ERROR("epoll_wait error: errno=%d errmsg=%s", errno, strerror(errno));
       return 1;
     } else if (ready_counts == 0) {
-      Log_debug("epoll_wait timeout...");
+      LOG_DEBUG("epoll_wait timeout...");
       continue;
     }
-    Log_debug("epoll_wait ok: ready_count=%d", ready_counts);
+    LOG_DEBUG("epoll_wait ok: ready_count=%d", ready_counts);
 
     // 处理就绪事件
     for (int i = 0; i < ready_counts; ++i) {
@@ -73,27 +73,27 @@ int main() {
         if (conn_fd < 0) {
           continue;
         }
-        Log_debug("new connection: fd=%d", conn_fd);
+        LOG_DEBUG("new connection: fd=%d", conn_fd);
 
         // 新得到的件描述符添加到 epol1 模型中，下轮循环的时候就可以被检测了
         // Q：这里需要创建一个新的结构体（new_event） 来传递信息吗？还是说可以复用之前创建的 event？
         event.events = EPOLLIN;
         event.data.fd = conn_fd;
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, conn_fd, &event) < 0) {
-          Log_error("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
+          LOG_ERROR("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
           continue;
         }
       } else {
         Socket client_conn(current_fd);
-        client_conn.setNonBlocking();  // 设置为非阻塞
-        client_conn.setRelease();      // 释放所有权，析构函数不再 close(fd)
+        client_conn.set_non_blocking();  // 设置为非阻塞
+        client_conn.set_release();      // 释放所有权，析构函数不再 close(fd)
         char buf[1024] = {0};
 
         ssize_t bytes_read = client_conn.recv(buf, sizeof(buf));
 
         if (bytes_read == 0) {
           // 客户端关闭连接
-          Log_info("Client disconnected: fd=%d", current_fd);
+          LOG_INFO("Client disconnected: fd=%d", current_fd);
           epoll_ctl(epoll_fd, EPOLL_CTL_DEL, current_fd, nullptr);
           client_conn.close();  // 手动关闭
         } else if (bytes_read > 0) {
@@ -106,7 +106,7 @@ int main() {
           if (errno == EAGAIN || errno == EWOULDBLOCK) {
             continue;  // 非阻塞模式正常情况
           }
-          Log_error("recv error: errno=%d errmsg=%s", errno, strerror(errno));
+          LOG_ERROR("recv error: errno=%d errmsg=%s", errno, strerror(errno));
           epoll_ctl(epoll_fd, EPOLL_CTL_DEL, current_fd, nullptr);
           client_conn.close();  // 手动关闭
         }

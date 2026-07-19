@@ -32,10 +32,10 @@ Socket::Socket() : m_ip("127.0.0.1"), m_port(0), m_sockfd(-1) {
    */
   m_sockfd = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (m_sockfd < 0) {
-    Log_error("create socket error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("create socket error: errno = %d, errmsg = %s", errno, strerror(errno));
     return;
   } else {
-    Log_debug("create socket success!");
+    LOG_DEBUG("create socket success!");
   }
 }
 
@@ -76,13 +76,13 @@ bool Socket::bind(const std::string &ip, uint16_t port) {
    * - 线程安全: 是（但套接字本身不是可重入资源）
    */
   if (::bind(m_sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-    Log_error("bind socket error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("bind socket error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   m_ip = ip;
   m_port = port;
 
-  Log_debug("bind socket success! ip = %s, port = %d", ip.c_str(), port);
+  LOG_DEBUG("bind socket success! ip = %s, port = %d", ip.c_str(), port);
   return true;
 }
 
@@ -95,10 +95,10 @@ bool Socket::listen(int backlog) {
    * - 注意: 该函数仅设置监听状态，不会阻塞或处理任何实际连接
    */
   if (::listen(m_sockfd, backlog) < 0) {
-    Log_error("listen socket error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("listen socket error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
-  Log_debug("Server started listening: %s:%d", m_ip.c_str(), m_port);
+  LOG_DEBUG("Server started listening: %s:%d", m_ip.c_str(), m_port);
   return true;
 }
 
@@ -119,14 +119,14 @@ bool Socket::connect(const std::string &ip, uint16_t port) {
    * - 注意: 该函数是取消点（cancellation point），因此未标记 __THROW，在多线程环境下需注意信号中断问题。
    */
   if (::connect(m_sockfd, reinterpret_cast<struct sockaddr *>(&server_addr), sizeof(server_addr)) < 0) {
-    Log_error("connect socket error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("connect socket error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
 
   m_ip = ip;
   m_port = port;
 
-  Log_debug("connect socket success! ip = %s, port = %d", ip.c_str(), port);
+  LOG_DEBUG("connect socket success! ip = %s, port = %d", ip.c_str(), port);
   return true;
 }
 
@@ -139,11 +139,11 @@ int Socket::accept() {
    */
   int connfd = ::accept(m_sockfd, nullptr, nullptr);
   if (connfd < 0) {
-    Log_error("accept socket error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("accept socket error: errno = %d, errmsg = %s", errno, strerror(errno));
     return -1;
   }
 
-  Log_debug("accept new connection: fd = %d", connfd);
+  LOG_DEBUG("accept new connection: fd = %d", connfd);
   return connfd;
 }
 
@@ -178,65 +178,65 @@ void Socket::close() {
   }
 }
 
-bool Socket::setNonBlocking() {
+bool Socket::set_non_blocking() {
   // 1. 首先使用 F_GETFL 获取（get）当前文件描述符 m_sockfd 的状态标志
   int flags = fcntl(m_sockfd, F_GETFL, 0);
   if (flags < 0) {
-    Log_error("fcntl get socket flags error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("fcntl get socket flags error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   // 2. 然后使用 F_SETFL（set）将 O_NONBLOCK 标志加入原有标志中，使该 socket 变为非阻塞模式
   flags |= O_NONBLOCK;
   if (fcntl(m_sockfd, F_SETFL, flags) < 0) {
-    Log_error("fcntl set socket flags error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("fcntl set socket flags error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   return true;
 }
 
-bool Socket::setSendBufferSize(size_t size) {
+bool Socket::set_send_buffer_size(size_t size) {
   uint32_t buffer_size = static_cast<uint32_t>(size);
   if (setsockopt(m_sockfd, SOL_SOCKET, SO_SNDBUF, &buffer_size, sizeof(buffer_size)) < 0) {
-    Log_error("set socket send buffer size error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("set socket send buffer size error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   return true;
 }
 
-bool Socket::setReceiveBufferSize(size_t size) {
+bool Socket::set_receive_buffer_size(size_t size) {
   uint32_t buffer_size = static_cast<uint32_t>(size);
   if (setsockopt(m_sockfd, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof(buffer_size)) < 0) {
-    Log_error("set socket receive buffer size error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("set socket receive buffer size error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   return true;
 }
 
-bool Socket::setLinger(bool active, int seconds) {
+bool Socket::set_linger(bool active, int seconds) {
   struct linger ling;
   memset(&ling, 0, sizeof(ling));
   ling.l_onoff = active ? 1 : 0;
   ling.l_linger = seconds;
   if (setsockopt(m_sockfd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling)) < 0) {
-    Log_error("set socket linger error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("set socket linger error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   return true;
 }
 
-bool Socket::setKeepAlive() {
+bool Socket::set_keep_alive() {
   int flag = 1;
   if (setsockopt(m_sockfd, SOL_SOCKET, SO_KEEPALIVE, &flag, sizeof(flag)) < 0) {
-    Log_error("set socket keepalive error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("set socket keepalive error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   return true;
 }
 
-bool Socket::setReuseAddress() {
+bool Socket::set_reuse_address() {
   int flag = 1;
   if (setsockopt(m_sockfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0) {
-    Log_error("set socket reuse address error: errno = %d, errmsg = %s", errno, strerror(errno));
+    LOG_ERROR("set socket reuse address error: errno = %d, errmsg = %s", errno, strerror(errno));
     return false;
   }
   return true;

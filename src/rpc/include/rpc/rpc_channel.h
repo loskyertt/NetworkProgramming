@@ -38,7 +38,7 @@ class RpcChannel {
   /**
    * @brief 构造 RPC 客户端通道。
    *
-   * @details 构造函数只保存服务端地址，不立即建立连接；真正的连接发生在每次 call 调用期间。
+   * @details 构造函数只保存服务端地址，不立即建立连接；真正地连接发生在每次 call 调用期间。
    *
    * @param ip RPC 服务端 IP 地址，例如 "127.0.0.1"。
    * @param port RPC 服务端监听端口。

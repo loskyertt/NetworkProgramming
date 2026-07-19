@@ -15,41 +15,40 @@ namespace sky::rank {
 
 template <typename Key, typename Value>
 class SortedSet {
- public:
-  using key_type = Key;
-  using value_type = Value;
-  using size_type = std::size_t;
+public:
+  using KeyType   = Key;
+  using ValueType = Value;
+  using SizeType  = std::size_t;
 
- private:
+private:
   struct KeyValueType {
-    key_type key;
-    value_type value;
+    KeyType key;
+    ValueType value;
 
-    explicit KeyValueType(const key_type &k, const value_type &v) : key(k), value(v) {}
+    explicit KeyValueType(const KeyType &k, const ValueType &v) : key(k), value(v) {}
   };
 
-  using key_value_ptr = std::shared_ptr<KeyValueType>;
+  using KeyValuePtr = std::shared_ptr<KeyValueType>;
 
   /* Comparator: ascending order. */
   struct ValueLess {
-    bool operator()(const key_value_ptr &left, const key_value_ptr &right) const {
-      if (left->value != right->value)
-        return left->value < right->value;
+    bool operator()(const KeyValuePtr &left, const KeyValuePtr &right) const {
+      if (left->value != right->value) return left->value < right->value;
 
       return left->key < right->key;
     }
   };
 
-  static constexpr size_type default_top = 1000;  // Default rank size.
+  static constexpr SizeType k_default_top = 1000;  // Default rank size.
 
-  size_type m_top;                                    // Rank size.
-  std::unordered_map<key_type, key_value_ptr> m_map;  // Fast lookup: O(1) average.
-  std::set<key_value_ptr, ValueLess> m_set;           // Ordered by ValueLess: O(log n).
+  SizeType m_top;                                    // Rank size.
+  std::unordered_map<KeyType, KeyValuePtr> m_map;  // Fast lookup: O(1) average.
+  std::set<KeyValuePtr, ValueLess> m_set;           // Ordered by ValueLess: O(log n).
 
- public:
-  SortedSet() : m_top(default_top) {}
+public:
+  SortedSet() : m_top(k_default_top) {}
 
-  explicit SortedSet(const size_type top) : m_top(top == 0 ? default_top : top) {}
+  explicit SortedSet(const SizeType top) : m_top(top == 0 ? k_default_top : top) {}
 
   SortedSet(SortedSet &&right) noexcept
       : m_top(right.m_top),
@@ -57,8 +56,7 @@ class SortedSet {
         m_set(std::move(right.m_set)) {}
 
   SortedSet &operator=(SortedSet &&right) noexcept {
-    if (this == &right)
-      return *this;
+    if (this == &right) return *this;
 
     m_top = right.m_top;
     m_map = std::move(right.m_map);
@@ -69,7 +67,7 @@ class SortedSet {
   ~SortedSet() = default;
 
   // Keep deleted copy operations public for clearer compiler diagnostics.
-  SortedSet(const SortedSet &) = delete;
+  SortedSet(const SortedSet &)            = delete;
   SortedSet &operator=(const SortedSet &) = delete;
 
   // Iterate from largest to smallest.
@@ -77,7 +75,7 @@ class SortedSet {
 
   auto end() const { return m_set.rend(); }
 
-  auto find(const key_type &k) const { return m_map.find(k); }
+  auto find(const KeyType &k) const { return m_map.find(k); }
 
   auto map_end() const { return m_map.end(); }
 
@@ -87,9 +85,9 @@ class SortedSet {
    * @param k Key
    * @param v Value
    */
-  void insert(const key_type &k, const value_type &v) {
+  void insert(const KeyType &k, const ValueType &v) {
     auto add = [&] {
-      key_value_ptr ptr = std::make_shared<KeyValueType>(k, v);
+      KeyValuePtr ptr = std::make_shared<KeyValueType>(k, v);
       m_map.emplace(k, ptr);
       m_set.insert(ptr);
     };
@@ -102,8 +100,7 @@ class SortedSet {
         auto min = m_set.begin();  // Smallest value in m_set.
         auto ptr = std::make_shared<KeyValueType>(k, v);
 
-        if (!ValueLess{}(*min, ptr))
-          return;
+        if (!ValueLess{}(*min, ptr)) return;
 
         m_map.erase((*min)->key);
         m_set.erase(min);
@@ -125,10 +122,9 @@ class SortedSet {
    *
    * @param k Key
    */
-  void erase(const key_type &k) {
+  void erase(const KeyType &k) {
     auto it = m_map.find(k);
-    if (it == m_map.end())
-      return;
+    if (it == m_map.end()) return;
     m_set.erase(it->second);
     m_map.erase(it);
   }
@@ -144,7 +140,7 @@ class SortedSet {
   /**
    * @return Current size.
    */
-  size_type size() const { return m_set.size(); }
+  SizeType size() const { return m_set.size(); }
 
   /**
    * @brief Get current rank by key.
@@ -152,13 +148,12 @@ class SortedSet {
    * @param k Key
    * @return Rank, or 0 if the key does not exist.
    */
-  size_type get_rank(const key_type &k) const {
+  SizeType get_rank(const KeyType &k) const {
     if (m_map.contains(k)) {
-      size_type rank = 0;
+      SizeType rank = 0;
       for (auto it = m_set.rbegin(); it != m_set.rend(); ++it) {
         ++rank;
-        if ((*it)->key == k)
-          return rank;
+        if ((*it)->key == k) return rank;
       }
     }
 
@@ -168,4 +163,4 @@ class SortedSet {
 
 }  // namespace sky::rank
 
-#endif  //NETWORK_PROGRAMMING_SORTED_SET_H
+#endif  // NETWORK_PROGRAMMING_SORTED_SET_H

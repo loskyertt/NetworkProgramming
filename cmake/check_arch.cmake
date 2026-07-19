@@ -1,16 +1,19 @@
+# cmake/check_arch.cmake
 message(STATUS "编译架构检测信息：")
 
-# A. 检查指针大小 (最准确的 32/64 位判断)
+# A. 检查指针大小
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(STATUS ">> 目标位数：64 位 (x64)")
-  set(TARGET_ARCH_BIT "64")
+  set(_target_arch_bit "64")
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
   message(STATUS ">> 目标位数：32 位 (x86)")
-  set(TARGET_ARCH_BIT "32")
+  set(_target_arch_bit "32")
 else()
   message(STATUS ">> 目标位数：未知 (指针大小：${CMAKE_SIZEOF_VOID_P})")
-  set(TARGET_ARCH_BIT "Unknown")
+  set(_target_arch_bit "Unknown")
 endif()
+
+unset(_target_arch_bit)
 
 # B. 检查处理器架构
 message(STATUS ">> 目标处理器 (System Processor): ${CMAKE_SYSTEM_PROCESSOR}")

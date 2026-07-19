@@ -29,14 +29,14 @@ EPoller::~EPoller() {
 bool EPoller::create(size_t max_events) {
   m_epoll_fd = epoll_create1(EPOLL_CLOEXEC);
   if (m_epoll_fd < 0) {
-    Log_error("epoll_create1 error: errno=%d errmsg=%s", errno, strerror(errno));
+    LOG_ERROR("epoll_create1 error: errno=%d errmsg=%s", errno, strerror(errno));
     return false;
   }
   m_events.resize(max_events);
   return true;
 }
 
-bool EPoller::setFd(int fd, uint32_t event) {
+bool EPoller::set_fd(int fd, uint32_t event) {
   struct epoll_event ev;  // 栈上局部变量，每次调用独立（可以避免多线程下的竞态条件）
   ev.data.fd = fd;
   ev.events = event;
@@ -44,24 +44,24 @@ bool EPoller::setFd(int fd, uint32_t event) {
     // 对于这种简单项目，可以就直接调用 epoll_ctl，让内核处理 EEXIST（进行重复添加检测）
     // 对于稍复杂项目，可以用哈希表来做状态管理，好处是可以避免触发内核错误路径
     if (errno == EEXIST) {
-      Log_warn("fd %d already added to epoll, then modify it...", fd);
-      return modFd(fd, event);
+      LOG_WARN("fd %d already added to epoll, then modify it...", fd);
+    return mod_fd(fd, event);
     }
-    Log_error("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
+    LOG_ERROR("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
     return false;
   }
   return true;
 }
 
-bool EPoller::deleteFd(int fd) {
+bool EPoller::delete_fd(int fd) {
   if (epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr) < 0) {
-    Log_error("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
+    LOG_ERROR("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
     return false;
   }
   return true;
 }
 
-int EPoller::epoll(int milliseconds) {
+int EPoller::wait(int milliseconds) {
   int max_events = static_cast<int>(m_events.size());
 
   // 永久阻塞，需要处理 EINTR
@@ -92,26 +92,26 @@ int EPoller::epoll(int milliseconds) {
   }
 }
 
-int EPoller::getFd(int idx) {
+int EPoller::get_fd(int idx) {
   if (idx < 0 || idx >= static_cast<int>(m_events.size())) {
-    throw std::out_of_range("EPoller::getFd: index out of range");
+    throw std::out_of_range("EPoller::get_fd: index out of range");
   }
   return m_events[static_cast<size_t>(idx)].data.fd;
 }
 
-uint32_t EPoller::getEvents(int idx) {
+uint32_t EPoller::get_events(int idx) {
   if (idx < 0 || idx >= static_cast<int>(m_events.size())) {
-    throw std::out_of_range("EPoller::getEvents: index out of range");
+    throw std::out_of_range("EPoller::get_events: index out of range");
   }
   return m_events[static_cast<size_t>(idx)].events;
 }
 
-bool EPoller::modFd(int fd, uint32_t event) {
+bool EPoller::mod_fd(int fd, uint32_t event) {
   struct epoll_event ev;
   ev.data.fd = fd;
   ev.events = event;
   if (epoll_ctl(m_epoll_fd, EPOLL_CTL_MOD, fd, &ev) < 0) {
-    Log_error("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
+    LOG_ERROR("epoll_ctl error: errno=%d errmsg=%s", errno, strerror(errno));
     return false;
   }
   return true;

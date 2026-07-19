@@ -16,14 +16,13 @@
 #include "logger/logger.h"
 
 #include <print>
-#include <stdexcept>
 
 using namespace sky::rpc;
 using namespace sky::utility;
 
 int main() {
   // 初始化日志
-  Singleton<Logger>::getInstance().open("log/rpc_client.log");
+  Singleton<Logger>::instance().open("log/rpc_client.log");
 
   try {
     // 创建存根（连接到 127.0.0.1:8080）

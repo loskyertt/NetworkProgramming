@@ -18,12 +18,12 @@ ServerSocket::ServerSocket(const std::string &ip, uint16_t port) : Socket() {
   std::println("ServerSocket constructor: listen_fd={}", m_sockfd);
 
   // 配置项
-  setNonBlocking(); // 设置为非阻塞 I/O 模式
-  setReceiveBufferSize(10 * 1024);
-  setSendBufferSize(10 * 1024);
-  setReuseAddress();
-  // setLinger(true, 0);
-  // setKeepAlive();
+  set_non_blocking(); // 设置为非阻塞 I/O 模式
+  set_receive_buffer_size(10 * 1024);
+  set_send_buffer_size(10 * 1024);
+  set_reuse_address();
+  // set_linger(true, 0);
+  // set_keep_alive();
 
   // 2. 绑定地址
   bind(ip, port);
